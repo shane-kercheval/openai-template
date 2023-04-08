@@ -10,7 +10,9 @@ openai
 pandas
 plotly
 plotly-express
+pydantic
 pytest
+pytest-asyncio
 python-dateutil
 PyYAML
 scikit-learn
