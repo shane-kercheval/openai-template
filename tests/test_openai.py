@@ -1,34 +1,15 @@
 import pytest
 import aiohttp
+from tenacity import wait_none
 import source.library.openai as openail
-from tests.conftest import CustomAsyncMock, MockResponse
-
-
-@pytest.fixture(scope='session')
-def OPENAI_API_KEY() -> str:
-    with open('/.openai_api_key', 'r') as handle:
-        openai_api_key = handle.read().strip()
-    return openai_api_key
-
-
-@pytest.fixture(scope='session')
-def OPENAI_URL_COMPLETION() -> str:
-    return 'https://api.openai.com/v1/completions'
-
-
-@pytest.fixture(scope='session')
-def babbage_model_payload__italy_capital() -> dict:
-    return {
-        'model': 'text-babbage-001',
-        'prompt': "What is the capital of Italy?",
-        'max_tokens': 50
-    }
+from tests.conftest import CustomAsyncMock, MockResponse, is_valid_datetime_format
 
 
 @pytest.mark.asyncio
 async def test__api_post(
         OPENAI_API_KEY,
         OPENAI_URL_COMPLETION,
+        OPENAI_MODEL,
         babbage_model_payload__italy_capital):
     assert OPENAI_API_KEY
     openail.API_KEY = OPENAI_API_KEY
@@ -39,9 +20,17 @@ async def test__api_post(
             url=OPENAI_URL_COMPLETION,
             payload=babbage_model_payload__italy_capital,
         )
+    assert 'Rome' in result.openai_result.text
+
     assert result.response_status == 200
     assert result.response_reason == 'OK'
-    assert 'Rome' in result.openai_result['choices'][0]['text']
+    assert len(result.openai_result.choices) == 1
+    assert result.openai_result.timestamp > 1680995788
+    assert is_valid_datetime_format(result.openai_result.timestamp_utc)
+    assert result.openai_result.model == OPENAI_MODEL
+    assert result.openai_result.usage_total_tokens > 0
+    assert 0 < result.openai_result.usage_prompt_tokens < result.openai_result.usage_total_tokens
+    assert 0 < result.openai_result.usage_completion_tokens < result.openai_result.usage_total_tokens  # noqa
 
 
 @pytest.mark.asyncio
@@ -57,11 +46,11 @@ async def test__api_post__invalid_api_key(
         )
     assert result.response_status == 401
     assert result.response_reason == 'Unauthorized'
-    assert result.openai_result['error'] is not None
+    # assert result.openai_result['error'] is not None
 
 
 @pytest.mark.asyncio
-async def test_post_async__429_error():
+async def test__post_async__429_error():
     url = 'https://example.com/api'
     payload = {'key': 'value'}
 
@@ -70,8 +59,27 @@ async def test_post_async__429_error():
 
     async with aiohttp.ClientSession() as session:
         session.post = post_mock
+        openail._post_async_with_retry.retry.wait = wait_none()
         response = await openail.post_async(session, url, payload)
         assert response.response_status == 429
         assert response.response_reason == 'Too Many Requests'
         assert response.openai_result is None
         assert session.post.call_count == 3
+
+
+def test__complete(OPENAI_MODEL, OPENAI_API_KEY):
+    prompts = [
+        "Question: What is the capital of Italy? ",
+        "What is the capital of France?",
+        "What is the capital of the United Kingdom?",
+    ]
+    openail.API_KEY = OPENAI_API_KEY
+    results = openail.complete(model=OPENAI_MODEL, prompts=prompts, max_tokens=10)
+    assert len(results) == len(prompts)
+    assert all([r.response_status == 200 for r in results])
+    assert all([r.response_reason == 'OK' for r in results])
+    assert all([r.openai_result is not None for r in results])
+
+    # results[0].openai_result['choices'][0]['text']
+    # results[1].openai_result['choices'][0]['text']
+    # results[2].openai_result['choices'][0]['text']

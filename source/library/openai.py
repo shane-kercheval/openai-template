@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from datetime import datetime
 import asyncio  # for making API calls concurrently
 import aiohttp  # for running API calls concurrently
 import json
@@ -13,10 +13,47 @@ RETRY_MULTIPLIER = 1
 RETRY_MAX = 10
 
 
+class OpenAIResult(BaseModel):
+    result: dict | None
+
+    @property
+    def choices(self) -> list:
+        return self.result['choices']
+
+    @property
+    def text(self) -> str:
+        return self.choices[0]['text'].strip()
+
+    @property
+    def timestamp(self) -> int:
+        return self.result['created']
+
+    @property
+    def timestamp_utc(self) -> str:
+        dt = datetime.utcfromtimestamp(self.timestamp)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+    @property
+    def model(self) -> str:
+        return self.result['model']
+
+    @property
+    def usage_total_tokens(self) -> int:
+        return self.result['usage']['total_tokens']
+
+    @property
+    def usage_prompt_tokens(self) -> int:
+        return self.result['usage']['prompt_tokens']
+
+    @property
+    def usage_completion_tokens(self) -> int:
+        return self.result['usage']['completion_tokens']
+
+
 class OpenAIResponse(BaseModel):
     response_status: int
     response_reason: str
-    openai_result: dict | None
+    openai_result: OpenAIResult | None
 
     @validator('response_reason')
     def clean_reason(cls, value: str):
@@ -61,7 +98,7 @@ async def _post_async_with_retry(
     return OpenAIResponse(
         response_status=response.status,
         response_reason=response.reason,
-        openai_result=result,
+        openai_result=OpenAIResult(result=result),
     )
 
 
@@ -90,3 +127,43 @@ async def post_async(
             response_reason='Too Many Requests',
             openai_result=None,
         )
+
+
+async def gather_payloads(url: str, payloads: list[dict]) -> list[OpenAIResponse]:
+    async with aiohttp.ClientSession() as session:
+        tasks = [post_async(session=session, url=url, payload=payload) for payload in payloads]
+        results = await asyncio.gather(*tasks)
+        return results
+
+
+def complete(
+        model: str,
+        prompts: list[str],
+        max_tokens: int | list[int],
+        temperature: float = 0,
+        top_p: float = 1,
+        n: int = 1,
+        stream: bool = False,
+        logprobs: int | None = None,
+        stop: str | None = None
+        ) -> list[OpenAIResponse]:
+
+    if isinstance(max_tokens, int):
+        max_tokens = [max_tokens] * len(prompts)
+
+    def _create_payload(_prompt: str, _max_tokens: int):
+        return dict(
+            model=model,
+            prompt=_prompt,
+            max_tokens=_max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            n=n,
+            stream=stream,
+            logprobs=logprobs,
+            stop=stop,
+        )
+    payloads = [_create_payload(_prompt=p, _max_tokens=m) for p, m in zip(prompts, max_tokens)]
+    url = 'https://api.openai.com/v1/completions'
+    responses = asyncio.run(gather_payloads(url=url, payloads=payloads))
+    return responses

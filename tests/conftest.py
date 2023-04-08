@@ -1,7 +1,14 @@
 """This file defines test fixtures for pytest unit-tests."""
 import pytest
+import re
 from unittest.mock import MagicMock
 from source.service.datasets import DatasetsBase, PickledDataLoader, CsvDataLoader
+
+
+def is_valid_datetime_format(datetime_str):
+    pattern = r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"
+    match = re.match(pattern, datetime_str)
+    return bool(match)
 
 
 class TestDatasets(DatasetsBase):
@@ -58,3 +65,29 @@ def datasets_fake_cache():
 @pytest.fixture(scope='function')
 def datasets_fake_no_cache():
     return TestDatasets(cache=False)
+
+
+@pytest.fixture(scope='session')
+def OPENAI_API_KEY() -> str:
+    with open('/.openai_api_key', 'r') as handle:
+        openai_api_key = handle.read().strip()
+    return openai_api_key
+
+
+@pytest.fixture(scope='session')
+def OPENAI_URL_COMPLETION() -> str:
+    return 'https://api.openai.com/v1/completions'
+
+
+@pytest.fixture(scope='session')
+def OPENAI_MODEL() -> str:
+    return 'text-babbage-001'
+
+
+@pytest.fixture(scope='session')
+def babbage_model_payload__italy_capital(OPENAI_MODEL) -> dict:
+    return {
+        'model': OPENAI_MODEL,
+        'prompt': "What is the capital of Italy?",
+        'max_tokens': 50
+    }
