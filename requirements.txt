@@ -1,3 +1,4 @@
+aiohttp
 click
 coverage
 flake8
@@ -5,6 +6,7 @@ helpsk
 jupyter-contrib-nbextensions
 notebook
 numpy
+openai
 pandas
 plotly
 plotly-express
@@ -12,4 +14,5 @@ pytest
 python-dateutil
 PyYAML
 scikit-learn
+tenacity
 xmltodict

@@ -2,7 +2,9 @@
 # DOCKER
 ####
 docker_build:
+	cp ~/.openai_api_key .
 	docker compose -f docker-compose.yml build
+	rm .openai_api_key
 
 docker_run: docker_build
 	docker compose -f docker-compose.yml up

@@ -184,6 +184,8 @@ renv/*
 lid.176.ftz
 !language_codes.csv
 
+.vscode/settings.json
+.vscode/launch.json
 
 # exclude data folders by default
 data/interim/*
@@ -198,4 +200,4 @@ data/raw/*
 
 !tests/test_files/datasets/*.csv
 !tests/test_files/datasets/*.pkl
-.vscode/settings.json
+.openai_api_key
