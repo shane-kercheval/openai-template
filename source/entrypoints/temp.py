@@ -88,7 +88,7 @@ def main():
     print("\n----\nResults\n----\n")
     for result in responses:
         if result.response_status == 200:
-            print(f"Prompt: {result.prompt}\nResponse: {result.openai_result['choices'][0]['text'].strip()}\n")
+            print(f"Prompt: {result.prompt}\nResponse: {result.openai_result['choices'][0]['text'].strip()}\n")  # noqa
         else:
             print(
                 f"Prompt: {result.prompt}\n"
