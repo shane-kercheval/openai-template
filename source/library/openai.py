@@ -16,7 +16,7 @@ RETRY_MAX = 10
 class OpenAIResponse(BaseModel):
     response_status: int
     response_reason: str
-    openai_result: dict
+    openai_result: dict | None
 
     @validator('response_reason')
     def clean_reason(cls, value: str):
@@ -38,6 +38,33 @@ class RateLimitError(Exception):
     wait=wait_exponential(multiplier=RETRY_MULTIPLIER, max=RETRY_MAX),
     retry=retry_if_exception_type(RateLimitError)
 )
+async def _post_async_with_retry(
+        session: aiohttp.ClientSession,
+        url: str,
+        payload: dict) -> OpenAIResponse:
+    """
+    Helper function that allows us to retry in case of rate-limit errors, and recover
+    gracefully if we exceed the maximum attempts.
+    """
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {API_KEY}'
+    }
+    async with session.post(url, headers=headers, data=json.dumps(payload)) as response:
+        result = await response.json()
+
+    if response.status == 429:
+        # 429 is `Too Many Requests`
+        # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_handle_rate_limits.ipynb
+        raise RateLimitError("Rate limit exceeded")
+
+    return OpenAIResponse(
+        response_status=response.status,
+        response_reason=response.reason,
+        openai_result=result,
+    )
+
+
 async def post_async(
         session: aiohttp.ClientSession,
         url: str,
@@ -55,19 +82,11 @@ async def post_async(
         url : The URL to which the request is to be sent.
         payload : The payload data to send with the request.
     """
-    HEADERS = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {API_KEY}'
-    }
-    async with session.post(url, headers=HEADERS, data=json.dumps(payload)) as response:
-        result = await response.json()
-        if response.status == 429:
-            # 429 is `Too Many Requests`
-            # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_handle_rate_limits.ipynb
-            raise RateLimitError("Rate limit exceeded")
-
+    try:
+        return await _post_async_with_retry(session=session, url=url, payload=payload)
+    except RetryError:
         return OpenAIResponse(
-            response_status=response.status,
-            response_reason=response.reason,
-            openai_result=result
+            response_status=429,
+            response_reason='Too Many Requests',
+            openai_result=None,
         )

@@ -1,6 +1,7 @@
 import pytest
 import aiohttp
 import source.library.openai as openail
+from tests.conftest import CustomAsyncMock, MockResponse
 
 
 @pytest.fixture(scope='session')
@@ -57,3 +58,20 @@ async def test__api_post__invalid_api_key(
     assert result.response_status == 401
     assert result.response_reason == 'Unauthorized'
     assert result.openai_result['error'] is not None
+
+
+@pytest.mark.asyncio
+async def test_post_async__429_error():
+    url = 'https://example.com/api'
+    payload = {'key': 'value'}
+
+    mock_response = MockResponse(429)
+    post_mock = CustomAsyncMock(return_value=mock_response)
+
+    async with aiohttp.ClientSession() as session:
+        session.post = post_mock
+        response = await openail.post_async(session, url, payload)
+        assert response.response_status == 429
+        assert response.response_reason == 'Too Many Requests'
+        assert response.openai_result is None
+        assert session.post.call_count == 3

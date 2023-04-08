@@ -13,6 +13,7 @@ plotly-express
 pydantic
 pytest
 pytest-asyncio
+pytest-aiohttp
 python-dateutil
 PyYAML
 scikit-learn

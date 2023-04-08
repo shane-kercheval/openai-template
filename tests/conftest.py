@@ -1,5 +1,6 @@
 """This file defines test fixtures for pytest unit-tests."""
 import pytest
+from unittest.mock import MagicMock
 from source.service.datasets import DatasetsBase, PickledDataLoader, CsvDataLoader
 
 
@@ -25,6 +26,28 @@ class TestDatasets(DatasetsBase):
             cache=cache,
         )
         super().__init__()
+
+
+class CustomAsyncMock(MagicMock):
+    async def __aenter__(self, *args, **kwargs):
+        return self
+
+    async def __aexit__(self, *args, **kwargs):
+        pass
+
+
+class MockResponse:
+    def __init__(self, status):
+        self.status = status
+
+    async def json(self):
+        return {}
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 
 @pytest.fixture(scope='function')
