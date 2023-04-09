@@ -62,17 +62,21 @@ data_transform:
 
 data: data_extract data_transform
 
-explore:
+notebooks:
 	jupyter nbconvert --execute --to html source/notebooks/datasets.ipynb
 	mv source/notebooks/datasets.html output/data/datasets.html
 	jupyter nbconvert --execute --to html source/notebooks/data-profile.ipynb
 	mv source/notebooks/data-profile.html output/data/data-profile.html
+	jupyter nbconvert --execute --to html source/notebooks/openai_sandbox.ipynb
+	mv source/notebooks/openai_sandbox.html output/data/openai_sandbox.html
+	jupyter nbconvert --execute --to html source/notebooks/openai_reddit.ipynb
+	mv source/notebooks/openai_reddit.html output/data/openai_reddit.html
 
 remove_logs:
 	rm -f output/log.log
 
 ## Run entire workflow.
-all: tests data remove_logs explore
+all: tests data remove_logs notebooks
 
 ## Delete all generated files (e.g. virtual)
 clean:
