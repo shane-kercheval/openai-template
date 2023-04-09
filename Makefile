@@ -43,7 +43,7 @@ linting:
 unittests:
 	rm -f tests/test_files/log.log
 	# pytest tests
-	coverage run -m pytest tests
+	coverage run -m pytest --durations=0 tests
 	coverage html
 
 doctests:
