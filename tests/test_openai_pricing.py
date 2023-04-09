@@ -1,5 +1,5 @@
-from source.library.openai_pricing import PRICING_LOOKUP, EmbeddingModels, _encode, cost, \
-    InstructModels
+from source.library.openai_pricing import PRICING_LOOKUP, EmbeddingModels, _encode, num_tokens, \
+    cost, InstructModels
 
 
 def test__costs__instruct_models():
@@ -8,6 +8,7 @@ def test__costs__instruct_models():
     assert len(encoding) > 0
     assert isinstance(encoding, list)
     assert all([isinstance(x, int) for x in encoding])
+    assert num_tokens(test_value, model=InstructModels.BABBAGE) == len(encoding)
 
     assert cost(1_000_000, model=InstructModels.BABBAGE) == 0.5
     assert cost(1_000_000, model=InstructModels.CURIE) == 2.0
@@ -31,6 +32,7 @@ def test__costs__embedding_models():
     assert len(encoding) > 0
     assert isinstance(encoding, list)
     assert all([isinstance(x, int) for x in encoding])
+    assert num_tokens(test_value, model=EmbeddingModels.ADA) == len(encoding)
 
     assert cost(1_000_000, model=EmbeddingModels.ADA) == 0.4
     assert cost(1_000_000, model=EmbeddingModels.ADA.value) == 0.4

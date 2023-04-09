@@ -6,7 +6,7 @@ import json
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, \
     RetryError
-from source.library.openai_pricing import EmbeddingModels, cost, InstructModels
+from source.library.openai_pricing import EmbeddingModels, InstructModels, cost, num_tokens
 
 
 API_KEY = None
@@ -304,8 +304,10 @@ def text_completion(
 
 def text_embeddings(
         model: EmbeddingModels,
-        inputs: list[str]) -> OpenAIResponse:
+        inputs: list[str],
+        max_tokens: int = 8191) -> OpenAIResponse:
     assert isinstance(model, EmbeddingModels)
+    assert all(num_tokens(value=x, model=model) <= max_tokens for x in inputs)
 
     def _create_payload(_input: str):
         return dict(

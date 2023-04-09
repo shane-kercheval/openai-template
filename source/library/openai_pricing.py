@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from functools import singledispatch
+from functools import cache, singledispatch
 from enum import Enum
 from pydantic import BaseModel
 import tiktoken
@@ -48,9 +48,18 @@ MODEL_NAME_TO_ENUM_LOOKUP = {
 }
 
 
+@cache
+def get_encoding(model: OpenAIModels):
+    return tiktoken.encoding_for_model(model.value)
+
+
 def _encode(value: str, model: OpenAIModels) -> list[int]:
-    encoding = tiktoken.encoding_for_model(model.value)
+    encoding = get_encoding(model=model)
     return encoding.encode(value)
+
+
+def num_tokens(value: str, model: OpenAIModels) -> int:
+    return len(_encode(value=value, model=model))
 
 
 @singledispatch
@@ -67,4 +76,4 @@ def _(n_tokens: int, model: OpenAIModels | str):
 
 @cost.register
 def _(value: str, model: OpenAIModels | str):
-    return cost(len(_encode(value=value, model=model)), model=model)
+    return cost(num_tokens(value=value, model=model), model=model)
