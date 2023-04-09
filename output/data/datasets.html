@@ -15151,7 +15151,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;credit&#39;, &#39;raw__credit&#39;]</pre>
+<pre>[&#39;raw__reddit&#39;, &#39;reddit&#39;]</pre>
 </div>
 
 </div>
@@ -15168,8 +15168,8 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">credit</span> <span class="o">=</span> <span class="n">DATA</span><span class="o">.</span><span class="n">credit</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-<span class="n">credit</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reddit</span> <span class="o">=</span> <span class="n">DATA</span><span class="o">.</span><span class="n">reddit</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<span class="n">reddit</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
      </div>
@@ -15189,7 +15189,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>2023-04-07 04:43:06 - INFO     | Loading data `credit` from `data/processed/credit.pkl`
+<pre>2023-04-09 21:48:52 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
 </pre>
 </div>
 </div>
@@ -15218,149 +15218,53 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>checking_status</th>
-      <th>duration</th>
-      <th>credit_history</th>
-      <th>purpose</th>
-      <th>credit_amount</th>
-      <th>savings_status</th>
-      <th>employment</th>
-      <th>installment_commitment</th>
-      <th>personal_status</th>
-      <th>other_parties</th>
-      <th>residence_since</th>
-      <th>property_magnitude</th>
-      <th>age</th>
-      <th>other_payment_plans</th>
-      <th>housing</th>
-      <th>existing_credits</th>
-      <th>job</th>
-      <th>num_dependents</th>
-      <th>own_telephone</th>
-      <th>foreign_worker</th>
-      <th>target</th>
+      <th>id</th>
+      <th>subreddit</th>
+      <th>title</th>
+      <th>post</th>
+      <th>text</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>&lt;0</td>
-      <td>NaN</td>
-      <td>critical/other existing credit</td>
-      <td>radio/tv</td>
-      <td>1169.00</td>
-      <td>no known savings</td>
-      <td>&gt;=7</td>
-      <td>4.00</td>
-      <td>male single</td>
-      <td>none</td>
-      <td>4.00</td>
-      <td>real estate</td>
-      <td>67.00</td>
-      <td>none</td>
-      <td>own</td>
-      <td>2.00</td>
-      <td>skilled</td>
-      <td>1.00</td>
-      <td>yes</td>
-      <td>yes</td>
-      <td>good</td>
+      <td>6y0l40</td>
+      <td>Volvo</td>
+      <td>2012 c30 spoiler holding water</td>
+      <td>Lately my car has been a magnet for for dings and other mishaps while parked in my reserved spot and have been parking elsewhere which is unfortunately under a tree. I've noticed after a night of ...</td>
+      <td>2012 c30 spoiler holding water - Lately my car has been a magnet for for dings and other mishaps while parked in my reserved spot and have been parking elsewhere which is unfortunately under a tre...</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0&lt;=X&lt;200</td>
-      <td>NaN</td>
-      <td>existing paid</td>
-      <td>radio/tv</td>
-      <td>5951.00</td>
-      <td>&lt;100</td>
-      <td>1&lt;=X&lt;4</td>
-      <td>2.00</td>
-      <td>female div/dep/mar</td>
-      <td>none</td>
-      <td>2.00</td>
-      <td>real estate</td>
-      <td>22.00</td>
-      <td>none</td>
-      <td>own</td>
-      <td>1.00</td>
-      <td>skilled</td>
-      <td>1.00</td>
-      <td>none</td>
-      <td>yes</td>
-      <td>bad</td>
+      <td>7w66o5</td>
+      <td>Volvo</td>
+      <td>About to purchase 2014 V60, anything I should be aware of?</td>
+      <td>My 2004 V50 is slowly but surely giving up, it feels like I replaced half of the replaceable parts and got the other half repaired within the last year and I think it's time to let him go, especia...</td>
+      <td>About to purchase 2014 V60, anything I should be aware of? - My 2004 V50 is slowly but surely giving up, it feels like I replaced half of the replaceable parts and got the other half repaired with...</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>no checking</td>
-      <td>NaN</td>
-      <td>critical/other existing credit</td>
-      <td>education</td>
-      <td>2096.00</td>
-      <td>&lt;100</td>
-      <td>4&lt;=X&lt;7</td>
-      <td>2.00</td>
-      <td>male single</td>
-      <td>none</td>
-      <td>3.00</td>
-      <td>real estate</td>
-      <td>49.00</td>
-      <td>none</td>
-      <td>own</td>
-      <td>1.00</td>
-      <td>unskilled resident</td>
-      <td>2.00</td>
-      <td>none</td>
-      <td>yes</td>
-      <td>good</td>
+      <td>6ujf4y</td>
+      <td>Volvo</td>
+      <td>Experiencing the new XC60</td>
+      <td>I test drove the XC60 T8 yesterday and Oh. My. God is it quick. I was obviously aware of the performance numbers (bhp, 0-60 times etc), but it's a completely different experience trying it out for...</td>
+      <td>Experiencing the new XC60 - I test drove the XC60 T8 yesterday and Oh. My. God is it quick. I was obviously aware of the performance numbers (bhp, 0-60 times etc), but it's a completely different ...</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>&lt;0</td>
-      <td>NaN</td>
-      <td>existing paid</td>
-      <td>furniture/equipment</td>
-      <td>7882.00</td>
-      <td>&lt;100</td>
-      <td>4&lt;=X&lt;7</td>
-      <td>2.00</td>
-      <td>male single</td>
-      <td>guarantor</td>
-      <td>4.00</td>
-      <td>life insurance</td>
-      <td>45.00</td>
-      <td>none</td>
-      <td>for free</td>
-      <td>1.00</td>
-      <td>skilled</td>
-      <td>2.00</td>
-      <td>none</td>
-      <td>yes</td>
-      <td>good</td>
+      <td>70pr0e</td>
+      <td>Volvo</td>
+      <td>Pilot Assist 2 upgrade 2016 xc90</td>
+      <td>I am looking to pick up a used 2016 and am really interested in the Pilot Assist 2 retro fit upgrade that can be added.&lt;lb&gt;&lt;lb&gt;What do i need to look for to make sure the 2016 model i get can be r...</td>
+      <td>Pilot Assist 2 upgrade 2016 xc90 - I am looking to pick up a used 2016 and am really interested in the Pilot Assist 2 retro fit upgrade that can be added.&lt;lb&gt;&lt;lb&gt;What do i need to look for to make...</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>&lt;0</td>
-      <td>NaN</td>
-      <td>delayed previously</td>
-      <td>new car</td>
-      <td>4870.00</td>
-      <td>&lt;100</td>
-      <td>1&lt;=X&lt;4</td>
-      <td>3.00</td>
-      <td>male single</td>
-      <td>none</td>
-      <td>4.00</td>
-      <td>no known property</td>
-      <td>53.00</td>
-      <td>none</td>
-      <td>for free</td>
-      <td>2.00</td>
-      <td>skilled</td>
-      <td>2.00</td>
-      <td>none</td>
-      <td>yes</td>
-      <td>bad</td>
+      <td>4uqr9q</td>
+      <td>Volvo</td>
+      <td>2013 XC60 Negotiation with Volvo dealership</td>
+      <td>I am in the middle of a negotiation on the price of a 2013 XC60. We are off by 1k. I am debating about throwing out a request that he upgrades the software in my 2006 2.5 xc90 AWD with the polesta...</td>
+      <td>2013 XC60 Negotiation with Volvo dealership - I am in the middle of a negotiation on the price of a 2013 XC60. We are off by 1k. I am debating about throwing out a request that he upgrades the sof...</td>
     </tr>
   </tbody>
 </table>
@@ -15404,21 +15308,21 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
 <style type="text/css">
 </style>
-<table id="T_98f42">
+<table id="T_7009b">
   <thead>
     <tr>
-      <th id="T_98f42_level0_col0" class="col_heading level0 col0" >dataset</th>
-      <th id="T_98f42_level0_col1" class="col_heading level0 col1" >description</th>
+      <th id="T_7009b_level0_col0" class="col_heading level0 col0" >dataset</th>
+      <th id="T_7009b_level0_col1" class="col_heading level0 col1" >description</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td id="T_98f42_row0_col0" class="data row0 col0" >credit</td>
-      <td id="T_98f42_row0_col1" class="data row0 col1" >credit data from https://www.openml.org/d/31</td>
+      <td id="T_7009b_row0_col0" class="data row0 col0" >raw__reddit</td>
+      <td id="T_7009b_row0_col1" class="data row0 col1" >reddit data - raw</td>
     </tr>
     <tr>
-      <td id="T_98f42_row1_col0" class="data row1 col0" >raw__credit</td>
-      <td id="T_98f42_row1_col1" class="data row1 col1" >credit data from https://www.openml.org/d/31</td>
+      <td id="T_7009b_row1_col0" class="data row1 col0" >reddit</td>
+      <td id="T_7009b_row1_col1" class="data row1 col1" >reddit data</td>
     </tr>
   </tbody>
 </table>
@@ -15462,21 +15366,21 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
 <style type="text/css">
 </style>
-<table id="T_8bbaf">
+<table id="T_f2cf2">
   <thead>
     <tr>
-      <th id="T_8bbaf_level0_col0" class="col_heading level0 col0" >dataset</th>
-      <th id="T_8bbaf_level0_col1" class="col_heading level0 col1" >dependencies</th>
+      <th id="T_f2cf2_level0_col0" class="col_heading level0 col0" >dataset</th>
+      <th id="T_f2cf2_level0_col1" class="col_heading level0 col1" >dependencies</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td id="T_8bbaf_row0_col0" class="data row0 col0" >credit</td>
-      <td id="T_8bbaf_row0_col1" class="data row0 col1" >['raw__credit']</td>
+      <td id="T_f2cf2_row0_col0" class="data row0 col0" >raw__reddit</td>
+      <td id="T_f2cf2_row0_col1" class="data row0 col1" >[]</td>
     </tr>
     <tr>
-      <td id="T_8bbaf_row1_col0" class="data row1 col0" >raw__credit</td>
-      <td id="T_8bbaf_row1_col1" class="data row1 col1" >[]</td>
+      <td id="T_f2cf2_row1_col0" class="data row1 col0" >reddit</td>
+      <td id="T_f2cf2_row1_col1" class="data row1 col1" >['raw__reddit']</td>
     </tr>
   </tbody>
 </table>

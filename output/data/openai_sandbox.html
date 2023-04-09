@@ -3,7 +3,7 @@
 <head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>data-profile</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>openai_sandbox</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 
 
 
@@ -15103,19 +15103,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     </script>
     <!-- End of mathjax configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-
-<div id="cell-id=564aa887" class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>This files creates the training and test datasets for all other notebooks and scripts to reuse. This is the file I would typically use for an exploratory analysis.</p>
-
-</div>
-</div>
-</div>
-</div><div id="cell-id=ec01c1ce" class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div  class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -15124,11 +15112,14 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">run</span> &quot;/code/source/notebooks/notebook_settings.py&quot;
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">helpsk.utility</span> <span class="kn">import</span> <span class="n">Timer</span>
-<span class="kn">from</span> <span class="nn">helpsk.pandas</span> <span class="kn">import</span> <span class="n">numeric_summary</span><span class="p">,</span> <span class="n">non_numeric_summary</span>
-<span class="kn">from</span> <span class="nn">source.service.datasets</span> <span class="kn">import</span> <span class="n">DATA</span>
+<span class="kn">import</span> <span class="nn">source.library.openai</span> <span class="k">as</span> <span class="nn">oai</span>
+<span class="c1"># This is needed because openai.text_completion calls asynchronous functions but </span>
+<span class="c1"># Jupyter is already running its own event loop.</span>
+<span class="kn">import</span> <span class="nn">nest_asyncio</span>
+<span class="n">nest_asyncio</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;/.openai_api_key&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+    <span class="n">oai</span><span class="o">.</span><span class="n">API_KEY</span> <span class="o">=</span> <span class="n">handle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 </pre></div>
 
      </div>
@@ -15136,18 +15127,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 </div>
 
-</div>
-<div id="cell-id=f055efe1" class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Data">Data<a class="anchor-link" href="#Data">&#182;</a></h1>
-</div>
-</div>
-</div>
-</div><div id="cell-id=624dedbc" class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -15155,72 +15135,17 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">Timer</span><span class="p">(</span><span class="s2">&quot;Loading Data&quot;</span><span class="p">):</span>
-    <span class="n">reddit</span> <span class="o">=</span> <span class="n">DATA</span><span class="o">.</span><span class="n">reddit</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">generate_prompt</span><span class="p">(</span><span class="n">package</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Describe the </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> python package, if it exists. Be as accurate as possible</span>
+<span class="s2">    and don&#39;t create descriptions for packages that don&#39;t exist.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">template</span>
 
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>2023-04-09 21:48:55 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Timer Started: Loading Data
-Timer Finished (0.00 seconds)
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div><div id="cell-id=ebea0c53" class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">numeric_summary</span><span class="p">(</span><span class="n">reddit</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-</div><div id="cell-id=81c892b0" class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">non_numeric_summary</span><span class="p">(</span><span class="n">reddit</span><span class="p">)</span>
+<span class="n">packages</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;holoviews&#39;</span><span class="p">,</span> <span class="s1">&#39;bokeh&#39;</span><span class="p">,</span> <span class="s1">&#39;leather&#39;</span><span class="p">,</span> <span class="s1">&#39;pymc3&#39;</span><span class="p">,</span> <span class="s1">&#39;easyfinance&#39;</span><span class="p">]</span>
+<span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">generate_prompt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">packages</span><span class="p">]</span>
+<span class="n">responses</span> <span class="o">=</span> <span class="n">oai</span><span class="o">.</span><span class="n">text_completion</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">oai</span><span class="o">.</span><span class="n">InstructModels</span><span class="o">.</span><span class="n">BABBAGE</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">responses</span>
 </pre></div>
 
      </div>
@@ -15236,85 +15161,13 @@ Timer Finished (0.00 seconds)
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
 
 
 
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<style type="text/css">
-#T_82ab6_row0_col2, #T_82ab6_row1_col2, #T_82ab6_row2_col2, #T_82ab6_row3_col2, #T_82ab6_row4_col2 {
-  width: 10em;
-}
-#T_82ab6_row0_col5, #T_82ab6_row2_col5, #T_82ab6_row3_col5, #T_82ab6_row4_col5 {
-  width: 10em;
-  background: linear-gradient(90deg, #B4B7B9 100.0%, transparent 100.0%);
-}
-#T_82ab6_row1_col5 {
-  width: 10em;
-  background: linear-gradient(90deg, #B4B7B9 0.1%, transparent 0.1%);
-}
-</style>
-<table id="T_82ab6">
-  <thead>
-    <tr>
-      <th class="blank level0" >&nbsp;</th>
-      <th id="T_82ab6_level0_col0" class="col_heading level0 col0" ># of Non-Nulls</th>
-      <th id="T_82ab6_level0_col1" class="col_heading level0 col1" ># of Nulls</th>
-      <th id="T_82ab6_level0_col2" class="col_heading level0 col2" >% Nulls</th>
-      <th id="T_82ab6_level0_col3" class="col_heading level0 col3" >Most Freq. Value</th>
-      <th id="T_82ab6_level0_col4" class="col_heading level0 col4" ># of Unique</th>
-      <th id="T_82ab6_level0_col5" class="col_heading level0 col5" >% Unique</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th id="T_82ab6_level0_row0" class="row_heading level0 row0" >id</th>
-      <td id="T_82ab6_row0_col0" class="data row0 col0" >1,000</td>
-      <td id="T_82ab6_row0_col1" class="data row0 col1" >0</td>
-      <td id="T_82ab6_row0_col2" class="data row0 col2" >0.0%</td>
-      <td id="T_82ab6_row0_col3" class="data row0 col3" >6y0l40</td>
-      <td id="T_82ab6_row0_col4" class="data row0 col4" >1,000</td>
-      <td id="T_82ab6_row0_col5" class="data row0 col5" >100.0%</td>
-    </tr>
-    <tr>
-      <th id="T_82ab6_level0_row1" class="row_heading level0 row1" >subreddit</th>
-      <td id="T_82ab6_row1_col0" class="data row1 col0" >1,000</td>
-      <td id="T_82ab6_row1_col1" class="data row1 col1" >0</td>
-      <td id="T_82ab6_row1_col2" class="data row1 col2" >0.0%</td>
-      <td id="T_82ab6_row1_col3" class="data row1 col3" >Volvo</td>
-      <td id="T_82ab6_row1_col4" class="data row1 col4" >1</td>
-      <td id="T_82ab6_row1_col5" class="data row1 col5" >0.1%</td>
-    </tr>
-    <tr>
-      <th id="T_82ab6_level0_row2" class="row_heading level0 row2" >title</th>
-      <td id="T_82ab6_row2_col0" class="data row2 col0" >1,000</td>
-      <td id="T_82ab6_row2_col1" class="data row2 col1" >0</td>
-      <td id="T_82ab6_row2_col2" class="data row2 col2" >0.0%</td>
-      <td id="T_82ab6_row2_col3" class="data row2 col3" >2012 c30 spoiler holding water</td>
-      <td id="T_82ab6_row2_col4" class="data row2 col4" >1,000</td>
-      <td id="T_82ab6_row2_col5" class="data row2 col5" >100.0%</td>
-    </tr>
-    <tr>
-      <th id="T_82ab6_level0_row3" class="row_heading level0 row3" >post</th>
-      <td id="T_82ab6_row3_col0" class="data row3 col0" >1,000</td>
-      <td id="T_82ab6_row3_col1" class="data row3 col1" >0</td>
-      <td id="T_82ab6_row3_col2" class="data row3 col2" >0.0%</td>
-      <td id="T_82ab6_row3_col3" class="data row3 col3" >Lately my car has been a magne[...]</td>
-      <td id="T_82ab6_row3_col4" class="data row3 col4" >1,000</td>
-      <td id="T_82ab6_row3_col5" class="data row3 col5" >100.0%</td>
-    </tr>
-    <tr>
-      <th id="T_82ab6_level0_row4" class="row_heading level0 row4" >text</th>
-      <td id="T_82ab6_row4_col0" class="data row4 col0" >1,000</td>
-      <td id="T_82ab6_row4_col1" class="data row4 col1" >0</td>
-      <td id="T_82ab6_row4_col2" class="data row4 col2" >0.0%</td>
-      <td id="T_82ab6_row4_col3" class="data row4 col3" >2012 c30 spoiler holding water[...]</td>
-      <td id="T_82ab6_row4_col4" class="data row4 col4" >1,000</td>
-      <td id="T_82ab6_row4_col5" class="data row4 col5" >100.0%</td>
-    </tr>
-  </tbody>
-</table>
 
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>OpenAIResponses(responses=[OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC56Sb5cbXzZH5VUDaoF5sGILbE&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe holoviews python package is a library that allows you to create and view holoviews files.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 25, &#39;total_tokens&#39;: 69}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC52b8fO6PTrK0e7CDmX7qdG40E&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe bokeh python package is a library that allows you to create bokeh effects in your videos.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: None}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 43, &#39;completion_tokens&#39;: 24, &#39;total_tokens&#39;: 67}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC5nQFwJTmOch9YEY16E0b6G74M&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nLeather Python is a Python package that provides a library for working with leather.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 41, &#39;completion_tokens&#39;: 18, &#39;total_tokens&#39;: 59}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC56YVTcco4ovPZXdFONi3T2hZC&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\npymc3 is a Python package that provides a library for managing and analyzing machine learning models.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 22, &#39;total_tokens&#39;: 66}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC5uhxEG7GCimqnS1YiUNddbNE8&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe easyfinance package is a Python library that helps you easily calculate financial ratios.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 43, &#39;completion_tokens&#39;: 19, &#39;total_tokens&#39;: 62}}))])</pre>
 </div>
 
 </div>
@@ -15323,19 +15176,129 @@ Timer Finished (0.00 seconds)
 
 </div>
 
-</div>
-<div id="cell-id=a3e76191" class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<hr />
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="ow">not</span> <span class="n">responses</span><span class="o">.</span><span class="n">any_errors</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">responses</span><span class="o">.</span><span class="n">any_missing_data</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">responses</span><span class="o">.</span><span class="n">total_cost</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">responses</span><span class="o">.</span><span class="n">total_cost</span> <span class="o">&lt;</span> <span class="mi">10</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">responses</span><span class="o">.</span><span class="n">total_tokens</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>0.0001615
+323
+</pre>
+</div>
+</div>
 
 </div>
+
+</div>
+
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">package</span><span class="p">,</span> <span class="n">response</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">packages</span><span class="p">,</span> <span class="n">responses</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">-----</span><span class="se">\n</span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">usage_total_tokens</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">cost_total</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">reply</span><span class="p">)</span>
+</pre></div>
+
+     </div>
 </div>
 </div>
-</div><div id="cell-id=7536e719" class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>
+
+-----
+holoviews:
+
+69
+0.0000345
+The holoviews python package is a library that allows you to create and view holoviews files.
+
+
+-----
+bokeh:
+
+67
+0.0000335
+The bokeh python package is a library that allows you to create bokeh effects in your videos.
+
+
+-----
+leather:
+
+59
+0.0000295
+Leather Python is a Python package that provides a library for working with leather.
+
+
+-----
+pymc3:
+
+66
+0.0000330
+pymc3 is a Python package that provides a library for managing and analyzing machine learning models.
+
+
+-----
+easyfinance:
+
+62
+0.0000310
+The easyfinance package is a Python library that helps you easily calculate financial ratios.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -15343,7 +15306,7 @@ Timer Finished (0.00 seconds)
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reddit</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">responses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">usage_completion_tokens</span>
 </pre></div>
 
      </div>
@@ -15365,12 +15328,46 @@ Timer Finished (0.00 seconds)
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>0    2012 c30 spoiler holding water - Lately my car has been a magnet for for dings and other mishaps while parked in my reserved spot and have been parking elsewhere which is unfortunately under a tre...
-1    About to purchase 2014 V60, anything I should be aware of? - My 2004 V50 is slowly but surely giving up, it feels like I replaced half of the replaceable parts and got the other half repaired with...
-2    Experiencing the new XC60 - I test drove the XC60 T8 yesterday and Oh. My. God is it quick. I was obviously aware of the performance numbers (bhp, 0-60 times etc), but it&#39;s a completely different ...
-3    Pilot Assist 2 upgrade 2016 xc90 - I am looking to pick up a used 2016 and am really interested in the Pilot Assist 2 retro fit upgrade that can be added.&lt;lb&gt;&lt;lb&gt;What do i need to look for to make...
-4    2013 XC60 Negotiation with Volvo dealership - I am in the middle of a negotiation on the price of a 2013 XC60. We are off by 1k. I am debating about throwing out a request that he upgrades the sof...
-Name: text, dtype: object</pre>
+<pre>25</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">responses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">usage_total_tokens</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>69</pre>
 </div>
 
 </div>
@@ -15380,7 +15377,7 @@ Name: text, dtype: object</pre>
 </div>
 
 </div>
-<div id="cell-id=98a3e7ac" class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div  class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
