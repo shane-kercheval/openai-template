@@ -316,7 +316,7 @@ def text_embeddings(
     url = 'https://api.openai.com/v1/embeddings'
 
     responses = asyncio.run(gather_payloads(url=url, payloads=payloads))
-    
+
     def convert_response(status, reason, oai_result) -> OpenAIResponse:
         return OpenAIResponse(
             response_status=status,

@@ -1,4 +1,5 @@
-from source.library.openai_pricing import PRICING_LOOKUP, EmbeddingModels, _encode, cost, InstructModels
+from source.library.openai_pricing import PRICING_LOOKUP, EmbeddingModels, _encode, cost, \
+    InstructModels
 
 
 def test__costs__instruct_models():
