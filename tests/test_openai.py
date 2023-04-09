@@ -2,7 +2,8 @@ import pytest
 import aiohttp
 from tenacity import wait_none
 import source.library.openai as openail
-from tests.conftest import CustomAsyncMock, MockResponse, verify_openai_response, verify_openai_response_on_error
+from tests.conftest import CustomAsyncMock, MockResponse, verify_openai_response, \
+    verify_openai_response_on_error
 
 
 @pytest.mark.asyncio
@@ -77,3 +78,15 @@ def test__complete(OPENAI_MODEL, OPENAI_API_KEY):
     assert 'Rome' in responses[0].openai_result.text
     assert 'Paris' in responses[1].openai_result.text
     assert 'London' in responses[2].openai_result.text
+
+
+def test__complete__missing_api_key(OPENAI_MODEL):
+    prompts = [
+        "Question: What is the capital of Italy? ",
+        "What is the capital of France?",
+        "What is the capital of the United Kingdom?",
+    ]
+    # we are not setting API_KEY
+    # openail.API_KEY = OPENAI_API_KEY
+    with pytest.raises(openail.MissingApiKeyError):
+        openail.text_completion(model=OPENAI_MODEL, prompts=prompts, max_tokens=10)

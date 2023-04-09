@@ -103,6 +103,10 @@ class RateLimitError(Exception):
     pass
 
 
+class MissingApiKeyError(Exception):
+    pass
+
+
 @retry(
     stop=stop_after_attempt(RETRY_ATTEMPTS),
     wait=wait_exponential(multiplier=RETRY_MULTIPLIER, max=RETRY_MAX),
@@ -163,6 +167,9 @@ async def post_async(
 
 
 async def gather_payloads(url: str, payloads: list[dict]) -> list[OpenAIResponse]:
+    if not API_KEY:
+        raise MissingApiKeyError()
+
     async with aiohttp.ClientSession() as session:
         tasks = [post_async(session=session, url=url, payload=payload) for payload in payloads]
         results = await asyncio.gather(*tasks)
