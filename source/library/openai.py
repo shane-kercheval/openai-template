@@ -26,8 +26,15 @@ class OpenAIResult(BaseModel):
         return self.result.get('choices', [dict(text='')])
 
     @property
-    def text(self) -> str:
-        return self.choices[0]['text'].strip()
+    def reply(self) -> str:
+        text = self.choices[0].get('text', '')
+        if text:
+            return text.strip()
+        return ''
+
+    @property
+    def has_reply(self) -> bool:
+        return bool(self.reply)
 
     @property
     def timestamp(self) -> int:
@@ -44,6 +51,10 @@ class OpenAIResult(BaseModel):
     @property
     def model(self) -> str:
         return self.result.get('model')
+
+    @property
+    def type(self) -> str:
+        return self.result.get('object')
 
     @property
     def usage_total_tokens(self) -> int:
@@ -102,6 +113,10 @@ class OpenAIResponse(BaseModel):
     def has_error(self) -> bool:
         return self.response_status != 200 or self.openai_result.error_code is not None
 
+    @property
+    def has_reply(self) -> bool:
+        return self.openai_result.has_reply
+
 
 class OpenAIResponses(BaseModel):
     responses: list[OpenAIResponse]
@@ -109,6 +124,10 @@ class OpenAIResponses(BaseModel):
     @property
     def any_errors(self) -> bool:
         return any(r.has_error for r in self.responses)
+
+    @property
+    def any_missing_replies(self) -> bool:
+        return any(not r.has_reply for r in self.responses)
 
     @property
     def total_tokens(self) -> int:
@@ -221,7 +240,7 @@ def text_completion(
         stream: bool = False,
         logprobs: int | None = None,
         stop: str | None = None
-        ) -> list[OpenAIResponse]:
+        ) -> OpenAIResponses:
 
     assert isinstance(model, InstructModels)
     if isinstance(max_tokens, int):

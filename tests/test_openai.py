@@ -23,7 +23,7 @@ async def test__api_post(
             url=OPENAI_URL_COMPLETION,
             payload=babbage_model_payload__italy_capital,
         )
-    assert 'Rome' in response.openai_result.text
+    assert 'Rome' in response.openai_result.reply
     verify_openai_response(response=response, expected_model=OPENAI_MODEL)
 
 
@@ -78,9 +78,9 @@ def test__complete(OPENAI_MODEL, OPENAI_API_KEY):
     verify_openai_response(responses[0], expected_model=OPENAI_MODEL)
     verify_openai_response(responses[1], expected_model=OPENAI_MODEL)
     verify_openai_response(responses[2], expected_model=OPENAI_MODEL)
-    assert 'Rome' in responses[0].openai_result.text
-    assert 'Paris' in responses[1].openai_result.text
-    assert 'London' in responses[2].openai_result.text
+    assert 'Rome' in responses[0].openai_result.reply
+    assert 'Paris' in responses[1].openai_result.reply
+    assert 'London' in responses[2].openai_result.reply
     total_tokens = sum([x.openai_result.usage_total_tokens for x in responses])
     total_cost = sum([x.openai_result.cost_total for x in responses])
     assert total_cost == cost(total_tokens, model=OPENAI_MODEL)
@@ -103,6 +103,30 @@ def test__complete(OPENAI_MODEL, OPENAI_API_KEY):
     assert not responses[1].has_error
     assert not responses[2].has_error
     assert responses.any_errors
+
+    # test any_missing_replies() functionality
+    assert not responses.any_missing_replies
+    assert responses[0].has_reply
+    assert responses[1].has_reply
+    assert responses[2].has_reply
+    # set error within original openai response dict to mock no response
+    responses[1].openai_result.result['choices'][0]['text'] = '\n\n'
+    assert responses.any_missing_replies
+    assert responses[0].has_reply
+    assert not responses[1].has_reply
+    assert responses[2].has_reply
+    # set back to original
+    responses[1].openai_result.result['choices'][0]['text'] = '\n\nParis'
+    assert not responses.any_missing_replies
+    assert responses[0].has_reply
+    assert responses[1].has_reply
+    assert responses[2].has_reply
+    # set error within original openai response dict to mock no response
+    responses[1].openai_result.result['choices'][0]['text'] = None
+    assert responses.any_missing_replies
+    assert responses[0].has_reply
+    assert not responses[1].has_reply
+    assert responses[2].has_reply
 
 
 def test__complete__missing_api_key(OPENAI_MODEL):
