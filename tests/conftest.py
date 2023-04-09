@@ -16,6 +16,7 @@ def verify_openai_response(response: OpenAIResponse, expected_model):
     assert response.openai_result.text
     assert response.response_status == 200
     assert response.response_reason == 'OK'
+    assert not response.has_error
     assert len(response.openai_result.choices) == 1
     assert response.openai_result.timestamp > 1680995788
     assert is_valid_datetime_format(response.openai_result.timestamp_utc)
@@ -34,6 +35,7 @@ def verify_openai_response_on_error(response: OpenAIResponse):
     assert response.openai_result.error_type
     assert response.openai_result.error_message
     assert response.openai_result.text == ''
+    assert response.has_error
     assert response.response_status != 200
     assert response.response_reason != 'OK'
     assert len(response.openai_result.choices) == 1

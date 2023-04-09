@@ -52,14 +52,13 @@ def transform():
     # def generate_prompt(package: str) -> str:
     #     template = f"""
     #     Create a high-level description for the {package} python package. Be as accurate as
-    #     possible and don't create descriptions for packages that don't exist. 
+    #     possible and don't create descriptions for packages that don't exist.
     #     """
     #     return template
 
     # packages = ['holoviews', 'bokeh', 'leather', 'pymc3', 'easyfinance']
     # prompts = [generate_prompt(x) for x in packages]
     # responses = openai.text_completion(model='text-babbage-001', prompts=prompts, max_tokens=200)
-
 
 
 if __name__ == '__main__':

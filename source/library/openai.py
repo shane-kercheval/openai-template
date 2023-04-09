@@ -98,6 +98,41 @@ class OpenAIResponse(BaseModel):
             raise ValueError(f"Invalid HTTP status code: {value}")
         return value
 
+    @property
+    def has_error(self) -> bool:
+        return self.response_status != 200 or self.openai_result.error_code is not None
+
+
+class OpenAIResponses(BaseModel):
+    responses: list[OpenAIResponse]
+
+    @property
+    def any_errors(self) -> bool:
+        return any(r.has_error for r in self.responses)
+
+    @property
+    def total_tokens(self) -> int:
+        return sum(r.openai_result.usage_total_tokens for r in self.responses)
+
+    @property
+    def total_cost(self) -> float:
+        return sum(r.openai_result.cost_total for r in self.responses)
+
+    def __len__(self):
+        return len(self.responses)
+
+    def __iter__(self):
+        for response in self.responses:
+            yield response
+
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self.responses[index]
+        elif isinstance(index, slice):
+            return self.responses[index.start:index.stop:index.step]
+        else:
+            raise TypeError("Invalid index type")
+
 
 class RateLimitError(Exception):
     pass
@@ -207,4 +242,4 @@ def text_completion(
     payloads = [_create_payload(_prompt=p, _max_tokens=m) for p, m in zip(prompts, max_tokens)]
     url = 'https://api.openai.com/v1/completions'
     responses = asyncio.run(gather_payloads(url=url, payloads=payloads))
-    return responses
+    return OpenAIResponses(responses=responses)

@@ -74,6 +74,7 @@ def test__complete(OPENAI_MODEL, OPENAI_API_KEY):
     assert all([r.response_status == 200 for r in responses])
     assert all([r.response_reason == 'OK' for r in responses])
     assert all([r.openai_result is not None for r in responses])
+    assert len(responses[0:2]) == 2
     verify_openai_response(responses[0], expected_model=OPENAI_MODEL)
     verify_openai_response(responses[1], expected_model=OPENAI_MODEL)
     verify_openai_response(responses[2], expected_model=OPENAI_MODEL)
@@ -83,6 +84,25 @@ def test__complete(OPENAI_MODEL, OPENAI_API_KEY):
     total_tokens = sum([x.openai_result.usage_total_tokens for x in responses])
     total_cost = sum([x.openai_result.cost_total for x in responses])
     assert total_cost == cost(total_tokens, model=OPENAI_MODEL)
+    assert responses.total_cost == total_cost
+    assert responses.total_tokens == sum(r.openai_result.usage_total_tokens for r in responses)
+    assert not responses.any_errors
+
+    # set response_status to non-200 to mock an error
+    responses[0].response_status = 1
+    assert responses[0].has_error
+    assert not responses[1].has_error
+    assert not responses[2].has_error
+    assert responses.any_errors
+    # set back to ensure there are no longer errors
+    responses[0].response_status = 200
+    assert not responses.any_errors
+    # set error within original openai response dict to mock an error
+    responses[0].openai_result.result['error'] = {'code': 'error'}
+    assert responses[0].has_error
+    assert not responses[1].has_error
+    assert not responses[2].has_error
+    assert responses.any_errors
 
 
 def test__complete__missing_api_key(OPENAI_MODEL):
