@@ -12,46 +12,65 @@ def is_valid_datetime_format(datetime_str):
     return bool(match)
 
 
-def verify_openai_response(response: OpenAIResponse, expected_model):
-    assert response.openai_result.reply
-    assert response.openai_result.has_reply
-    assert response.has_reply
+def verify_openai_instruct_response(response: OpenAIResponse, expected_model):
+    assert response.result.reply
+    assert response.result.has_data
+    assert response.has_data
     assert response.response_status == 200
     assert response.response_reason == 'OK'
     assert not response.has_error
-    assert len(response.openai_result.choices) == 1
-    assert response.openai_result.timestamp > 1680995788
-    assert is_valid_datetime_format(response.openai_result.timestamp_utc)
-    assert response.openai_result.model == expected_model.value
-    assert response.openai_result.type == 'text_completion'
-    assert response.openai_result.usage_total_tokens > 0
-    assert 0 < response.openai_result.usage_prompt_tokens < response.openai_result.usage_total_tokens  # noqa
-    assert 0 < response.openai_result.usage_completion_tokens < response.openai_result.usage_total_tokens  # noqa
-    assert 0 < response.openai_result.cost_total < 0.1
-    assert response.openai_result.error_code is None
-    assert response.openai_result.error_type is None
-    assert response.openai_result.error_message is None
+    assert len(response.result.choices) == 1
+    assert response.result.timestamp > 1680995788
+    assert is_valid_datetime_format(response.result.timestamp_utc)
+    assert response.result.model == expected_model.value
+    assert response.result.type == 'text_completion'
+    assert response.result.usage_total_tokens > 0
+    assert 0 < response.result.usage_prompt_tokens < response.result.usage_total_tokens
+    assert 0 < response.result.usage_completion_tokens < response.result.usage_total_tokens
+    assert 0 < response.result.cost_total < 0.1
+    assert response.result.error_code is None
+    assert response.result.error_type is None
+    assert response.result.error_message is None
 
 
-def verify_openai_response_on_error(response: OpenAIResponse):
-    assert response.openai_result.error_code
-    assert response.openai_result.error_type
-    assert response.openai_result.error_message
-    assert response.openai_result.reply == ''
-    assert not response.openai_result.reply
-    assert not response.has_reply
+def verify_openai_instruct_response_on_error(response: OpenAIResponse):
+    assert response.result.error_code
+    assert response.result.error_type
+    assert response.result.error_message
+    assert response.result.reply == ''
+    assert not response.result.reply
+    assert not response.has_data
     assert response.has_error
     assert response.response_status != 200
     assert response.response_reason != 'OK'
-    assert len(response.openai_result.choices) == 1
-    assert response.openai_result.model is None
-    assert response.openai_result.type is None
-    assert response.openai_result.timestamp is None
-    assert response.openai_result.timestamp_utc is None
-    assert response.openai_result.usage_total_tokens is None
-    assert response.openai_result.usage_prompt_tokens is None
-    assert response.openai_result.usage_completion_tokens is None
-    assert response.openai_result.cost_total is None
+    assert len(response.result.choices) == 1
+    assert response.result.model is None
+    assert response.result.type is None
+    assert response.result.timestamp is None
+    assert response.result.timestamp_utc is None
+    assert response.result.usage_total_tokens is None
+    assert response.result.usage_prompt_tokens is None
+    assert response.result.usage_completion_tokens is None
+    assert response.result.cost_total is None
+
+
+def verify_openai_embedding_response(response: OpenAIResponse, expected_model):
+    assert len(response.result.embedding) > 0
+    assert all(isinstance(x, float) for x in response.result.embedding)
+    assert response.result.has_data
+    assert response.has_data
+    assert response.response_status == 200
+    assert response.response_reason == 'OK'
+    assert not response.has_error
+    # assert response.result.timestamp > 1680995788
+    # assert is_valid_datetime_format(response.result.timestamp_utc)
+    assert response.result.model == expected_model.value
+    # assert response.result.type == 'text_completion'
+    assert response.result.usage_total_tokens > 0
+    assert 0 < response.result.cost_total < 0.1
+    assert response.result.error_code is None
+    assert response.result.error_type is None
+    assert response.result.error_message is None
 
 
 class TestDatasets(DatasetsBase):

@@ -1,16 +1,31 @@
+from abc import ABC, abstractmethod
 from functools import singledispatch
 from enum import Enum
 from pydantic import BaseModel
 import tiktoken
 
 
-class InstructModels(Enum):
+class OpenAIModels(Enum):
+    pass
+
+
+class InstructModels(OpenAIModels):
     BABBAGE = 'text-babbage-001'
     CURIE = 'text-curie-001'
     DAVINCI = 'text-davinci-003'
 
 
-class InstructPricing(BaseModel):
+class EmbeddingModels(OpenAIModels):
+    ADA = 'text-embedding-ada-002'
+
+
+class ModelPricing(BaseModel, ABC):
+    @abstractmethod
+    def cost(self, n_tokens: int) -> float:
+        """Functiont that takes the number of tokens and returns the estimated cost."""
+
+
+class PerXTokensPricing(ModelPricing):
     price_per_tokens: float
     per_x_tokens: int
 
@@ -19,35 +34,37 @@ class InstructPricing(BaseModel):
 
 
 PRICING_LOOKUP = {
-    InstructModels.BABBAGE: InstructPricing(price_per_tokens=0.0005, per_x_tokens=1_000),
-    InstructModels.CURIE: InstructPricing(price_per_tokens=0.002, per_x_tokens=1_000),
-    InstructModels.DAVINCI: InstructPricing(price_per_tokens=0.02, per_x_tokens=1_000),
+    EmbeddingModels.ADA: PerXTokensPricing(price_per_tokens=0.0004, per_x_tokens=1_000),
+    InstructModels.BABBAGE: PerXTokensPricing(price_per_tokens=0.0005, per_x_tokens=1_000),
+    InstructModels.CURIE: PerXTokensPricing(price_per_tokens=0.002, per_x_tokens=1_000),
+    InstructModels.DAVINCI: PerXTokensPricing(price_per_tokens=0.02, per_x_tokens=1_000),
 }
 
 MODEL_NAME_TO_ENUM_LOOKUP = {
-    'text-babbage-001': InstructModels.BABBAGE,
-    'text-curie-001': InstructModels.CURIE,
-    'text-davinci-003': InstructModels.DAVINCI,
+    EmbeddingModels.ADA.value: EmbeddingModels.ADA,
+    InstructModels.BABBAGE.value: InstructModels.BABBAGE,
+    InstructModels.CURIE.value: InstructModels.CURIE,
+    InstructModels.DAVINCI.value: InstructModels.DAVINCI,
 }
 
 
-def _encode(value: str, model: InstructModels) -> list[int]:
+def _encode(value: str, model: OpenAIModels) -> list[int]:
     encoding = tiktoken.encoding_for_model(model.value)
     return encoding.encode(value)
 
 
 @singledispatch
-def cost(value, model: InstructModels | str):
+def cost(value, model: OpenAIModels | str):
     raise NotImplementedError("Unsupported data type")
 
 
 @cost.register
-def _(n_tokens: int, model: InstructModels | str):
+def _(n_tokens: int, model: OpenAIModels | str):
     if isinstance(model, str):
         model = MODEL_NAME_TO_ENUM_LOOKUP[model]
     return PRICING_LOOKUP[model].cost(n_tokens=n_tokens)
 
 
 @cost.register
-def _(value: str, model: InstructModels | str):
+def _(value: str, model: OpenAIModels | str):
     return cost(len(_encode(value=value, model=model)), model=model)

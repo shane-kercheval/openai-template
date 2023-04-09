@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from datetime import datetime
 import asyncio
 import aiohttp  # for running API calls concurrently
@@ -5,7 +6,7 @@ import json
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, \
     RetryError
-from source.library.openai_pricing import cost, InstructModels
+from source.library.openai_pricing import EmbeddingModels, cost, InstructModels
 
 
 API_KEY = None
@@ -14,7 +15,7 @@ RETRY_MULTIPLIER = 1
 RETRY_MAX = 10
 
 
-class OpenAIResult(BaseModel):
+class OpenAIResultBase(BaseModel):
     result: dict | None = {}
 
     @validator('result', pre=True, always=True)
@@ -22,19 +23,12 @@ class OpenAIResult(BaseModel):
         return value or {}
 
     @property
-    def choices(self) -> list:
-        return self.result.get('choices', [dict(text='')])
-
-    @property
-    def reply(self) -> str:
-        text = self.choices[0].get('text', '')
-        if text:
-            return text.strip()
-        return ''
-
-    @property
-    def has_reply(self) -> bool:
-        return bool(self.reply)
+    @abstractmethod
+    def has_data():
+        """
+        Indicates whether or not OpenAI give a response with valid data (e.g. text, embeddings,
+        etc.)
+        """
 
     @property
     def timestamp(self) -> int:
@@ -59,14 +53,6 @@ class OpenAIResult(BaseModel):
     @property
     def usage_total_tokens(self) -> int:
         return self.result.get('usage', {}).get('total_tokens')
-
-    @property
-    def usage_prompt_tokens(self) -> int:
-        return self.result.get('usage', {}).get('prompt_tokens')
-
-    @property
-    def usage_completion_tokens(self) -> int:
-        return self.result.get('usage', {}).get('completion_tokens')
 
     @property
     def cost_total(self) -> float:
@@ -94,10 +80,53 @@ class OpenAIResult(BaseModel):
         return self.result.get('error', {}).get('message')
 
 
+class OpenAIInstructResult(OpenAIResultBase):
+    @property
+    def choices(self) -> list[dict]:
+        return self.result.get('choices', [dict(text='')])
+
+    @property
+    def reply(self) -> str:
+        text = self.choices[0].get('text', '')
+        if text:
+            return text.strip()
+        return ''
+
+    @property
+    def usage_prompt_tokens(self) -> int:
+        return self.result.get('usage', {}).get('prompt_tokens')
+
+    @property
+    def usage_completion_tokens(self) -> int:
+        return self.result.get('usage', {}).get('completion_tokens')
+
+    @property
+    def has_data(self) -> bool:
+        return bool(self.reply)
+
+
+class OpenAIEmbeddingResult(OpenAIResultBase):
+    @property
+    def data(self) -> list[dict]:
+        return self.result.get('data', [dict(embedding=[])])
+
+    @property
+    def embedding(self) -> list[dict]:
+        return self.data[0].get('embedding', [])
+
+    @property
+    def has_data(self) -> bool:
+        return bool(self.embedding)
+
+    @property
+    def model(self) -> str:
+        return super().model.replace('-v2', '')
+
+
 class OpenAIResponse(BaseModel):
     response_status: int
     response_reason: str
-    openai_result: OpenAIResult
+    result: OpenAIResultBase
 
     @validator('response_reason')
     def clean_reason(cls, value: str):
@@ -111,11 +140,11 @@ class OpenAIResponse(BaseModel):
 
     @property
     def has_error(self) -> bool:
-        return self.response_status != 200 or self.openai_result.error_code is not None
+        return self.response_status != 200 or self.result.error_code is not None
 
     @property
-    def has_reply(self) -> bool:
-        return self.openai_result.has_reply
+    def has_data(self) -> bool:
+        return self.result.has_data
 
 
 class OpenAIResponses(BaseModel):
@@ -126,16 +155,16 @@ class OpenAIResponses(BaseModel):
         return any(r.has_error for r in self.responses)
 
     @property
-    def any_missing_replies(self) -> bool:
-        return any(not r.has_reply for r in self.responses)
+    def any_missing_data(self) -> bool:
+        return any(not r.has_data for r in self.responses)
 
     @property
     def total_tokens(self) -> int:
-        return sum(r.openai_result.usage_total_tokens for r in self.responses)
+        return sum(r.result.usage_total_tokens for r in self.responses)
 
     @property
     def total_cost(self) -> float:
-        return sum(r.openai_result.cost_total for r in self.responses)
+        return sum(r.result.cost_total for r in self.responses)
 
     def __len__(self):
         return len(self.responses)
@@ -161,6 +190,11 @@ class MissingApiKeyError(Exception):
     pass
 
 
+class CustomResponse(BaseModel):
+    status: int
+    reason: str
+
+
 @retry(
     stop=stop_after_attempt(RETRY_ATTEMPTS),
     wait=wait_exponential(multiplier=RETRY_MULTIPLIER, max=RETRY_MAX),
@@ -169,7 +203,7 @@ class MissingApiKeyError(Exception):
 async def _post_async_with_retry(
         session: aiohttp.ClientSession,
         url: str,
-        payload: dict) -> OpenAIResponse:
+        payload: dict) -> tuple[aiohttp.ClientResponse, dict]:
     """
     Helper function that allows us to retry in case of rate-limit errors, and recover
     gracefully if we exceed the maximum attempts.
@@ -186,17 +220,13 @@ async def _post_async_with_retry(
         # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_handle_rate_limits.ipynb
         raise RateLimitError("Rate limit exceeded")
 
-    return OpenAIResponse(
-        response_status=response.status,
-        response_reason=response.reason,
-        openai_result=OpenAIResult(result=result),
-    )
+    return response, result
 
 
 async def post_async(
         session: aiohttp.ClientSession,
         url: str,
-        payload: dict) -> OpenAIResponse:
+        payload: dict) -> tuple[aiohttp.ClientResponse, dict]:
     """
     The post_async function is an asynchronous function that sends an HTTP POST request to a
     specified URL with a payload and returns an OpenAIResponse object.
@@ -213,14 +243,12 @@ async def post_async(
     try:
         return await _post_async_with_retry(session=session, url=url, payload=payload)
     except RetryError:
-        return OpenAIResponse(
-            response_status=429,
-            response_reason='Too Many Requests',
-            openai_result=OpenAIResult(result=None),
-        )
+        return CustomResponse(status=429, reason='Too Many Requests'), None
 
 
-async def gather_payloads(url: str, payloads: list[dict]) -> list[OpenAIResponse]:
+async def gather_payloads(
+        url: str,
+        payloads: list[dict]) -> list[tuple[aiohttp.ClientResponse, dict]]:
     if not API_KEY:
         raise MissingApiKeyError()
 
@@ -261,4 +289,41 @@ def text_completion(
     payloads = [_create_payload(_prompt=p, _max_tokens=m) for p, m in zip(prompts, max_tokens)]
     url = 'https://api.openai.com/v1/completions'
     responses = asyncio.run(gather_payloads(url=url, payloads=payloads))
-    return OpenAIResponses(responses=responses)
+
+    def convert_response(status, reason, oai_result) -> OpenAIResponse:
+        return OpenAIResponse(
+            response_status=status,
+            response_reason=reason,
+            result=OpenAIInstructResult(result=oai_result),
+        )
+
+    return OpenAIResponses(
+        responses=[convert_response(x[0].status, x[0].reason, x[1]) for x in responses]
+    )
+
+
+def text_embeddings(
+        model: EmbeddingModels,
+        inputs: list[str]) -> OpenAIResponse:
+    assert isinstance(model, EmbeddingModels)
+
+    def _create_payload(_input: str):
+        return dict(
+            model=model.value,
+            input=_input,
+        )
+    payloads = [_create_payload(_input=i) for i in inputs]
+    url = 'https://api.openai.com/v1/embeddings'
+
+    responses = asyncio.run(gather_payloads(url=url, payloads=payloads))
+    
+    def convert_response(status, reason, oai_result) -> OpenAIResponse:
+        return OpenAIResponse(
+            response_status=status,
+            response_reason=reason,
+            result=OpenAIEmbeddingResult(result=oai_result),
+        )
+
+    return OpenAIResponses(
+        responses=[convert_response(x[0].status, x[0].reason, x[1]) for x in responses]
+    )
