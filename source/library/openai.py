@@ -5,7 +5,7 @@ import json
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, \
     RetryError
-from source.library.openai_pricing import cost
+from source.library.openai_pricing import cost, InstructModels
 
 
 API_KEY = None
@@ -177,7 +177,7 @@ async def gather_payloads(url: str, payloads: list[dict]) -> list[OpenAIResponse
 
 
 def text_completion(
-        model: str,
+        model: InstructModels,
         prompts: list[str],
         max_tokens: int | list[int],
         temperature: float = 0,
@@ -188,12 +188,13 @@ def text_completion(
         stop: str | None = None
         ) -> list[OpenAIResponse]:
 
+    assert isinstance(model, InstructModels)
     if isinstance(max_tokens, int):
         max_tokens = [max_tokens] * len(prompts)
 
     def _create_payload(_prompt: str, _max_tokens: int):
         return dict(
-            model=model,
+            model=model.value,
             prompt=_prompt,
             max_tokens=_max_tokens,
             temperature=temperature,

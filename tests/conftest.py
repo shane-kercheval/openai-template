@@ -2,8 +2,8 @@
 import pytest
 import re
 from unittest.mock import MagicMock
-from source.library.openai import OpenAIResponse
-from source.service.datasets import DatasetsBase, PickledDataLoader, CsvDataLoader
+from source.library.openai import OpenAIResponse, InstructModels
+from source.service.dataset_types import DatasetsBase, PickledDataLoader, CsvDataLoader
 
 
 def is_valid_datetime_format(datetime_str):
@@ -19,7 +19,7 @@ def verify_openai_response(response: OpenAIResponse, expected_model):
     assert len(response.openai_result.choices) == 1
     assert response.openai_result.timestamp > 1680995788
     assert is_valid_datetime_format(response.openai_result.timestamp_utc)
-    assert response.openai_result.model == expected_model
+    assert response.openai_result.model == expected_model.value
     assert response.openai_result.usage_total_tokens > 0
     assert 0 < response.openai_result.usage_prompt_tokens < response.openai_result.usage_total_tokens  # noqa
     assert 0 < response.openai_result.usage_completion_tokens < response.openai_result.usage_total_tokens  # noqa
@@ -37,6 +37,7 @@ def verify_openai_response_on_error(response: OpenAIResponse):
     assert response.response_status != 200
     assert response.response_reason != 'OK'
     assert len(response.openai_result.choices) == 1
+    assert response.openai_result.model is None
     assert response.openai_result.timestamp is None
     assert response.openai_result.timestamp_utc is None
     assert response.openai_result.usage_total_tokens is None
@@ -114,14 +115,14 @@ def OPENAI_URL_COMPLETION() -> str:
 
 
 @pytest.fixture(scope='session')
-def OPENAI_MODEL() -> str:
-    return 'text-babbage-001'
+def OPENAI_MODEL() -> InstructModels:
+    return InstructModels.BABBAGE
 
 
 @pytest.fixture(scope='session')
 def babbage_model_payload__italy_capital(OPENAI_MODEL) -> dict:
     return {
-        'model': OPENAI_MODEL,
+        'model': OPENAI_MODEL.value,
         'prompt': "What is the capital of Italy?",
         'max_tokens': 50
     }
