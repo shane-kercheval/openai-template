@@ -11,6 +11,7 @@ import logging.config
 import logging
 import click
 
+# import source.library.openai as openai
 import source.service.etl as etl
 from source.service.datasets import DATA
 
@@ -32,22 +33,33 @@ def main():
 
 @main.command()
 def extract():
-    """This function downloads the credit data from openml.org."""
-    credit_data = etl.extract()
-    logging.info(
-        f"Credit data downloaded with {credit_data.shape[0]} "
-        f"rows and {credit_data.shape[1]} columns."
-    )
-    DATA.raw__credit.save(credit_data)
+    logging.info("Extracting Data")
+    reddit = etl.extract()
+    DATA.raw__reddit.save(reddit)
 
 
 @main.command()
 def transform():
-    """This function transforms the credit data."""
-    raw__credit = DATA.raw__credit.load()
-    logging.info("Transforming credit data.")
-    credit = etl.transform(raw__credit)
-    DATA.credit.save(credit)
+    """This function transforms the reddit data."""
+    raw__reddit = DATA.raw__reddit.load()
+    logging.info("Transforming reddit data.")
+    reddit = etl.transform(raw__reddit)
+    DATA.reddit.save(reddit)
+
+    # with open('/.openai_api_key', 'r') as handle:
+    #     openai.API_KEY = handle.read().strip()
+
+    # def generate_prompt(package: str) -> str:
+    #     template = f"""
+    #     Create a high-level description for the {package} python package. Be as accurate as
+    #     possible and don't create descriptions for packages that don't exist. 
+    #     """
+    #     return template
+
+    # packages = ['holoviews', 'bokeh', 'leather', 'pymc3', 'easyfinance']
+    # prompts = [generate_prompt(x) for x in packages]
+    # responses = openai.text_completion(model='text-babbage-001', prompts=prompts, max_tokens=200)
+
 
 
 if __name__ == '__main__':
