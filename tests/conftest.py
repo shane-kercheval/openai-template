@@ -2,6 +2,7 @@
 import pytest
 import re
 from unittest.mock import MagicMock
+from source.library.openai import OpenAIResponse
 from source.service.datasets import DatasetsBase, PickledDataLoader, CsvDataLoader
 
 
@@ -9,6 +10,39 @@ def is_valid_datetime_format(datetime_str):
     pattern = r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"
     match = re.match(pattern, datetime_str)
     return bool(match)
+
+
+def verify_openai_response(response: OpenAIResponse, expected_model):
+    assert response.openai_result.text
+    assert response.response_status == 200
+    assert response.response_reason == 'OK'
+    assert len(response.openai_result.choices) == 1
+    assert response.openai_result.timestamp > 1680995788
+    assert is_valid_datetime_format(response.openai_result.timestamp_utc)
+    assert response.openai_result.model == expected_model
+    assert response.openai_result.usage_total_tokens > 0
+    assert 0 < response.openai_result.usage_prompt_tokens < response.openai_result.usage_total_tokens  # noqa
+    assert 0 < response.openai_result.usage_completion_tokens < response.openai_result.usage_total_tokens  # noqa
+    assert 0 < response.openai_result.cost_total < 0.1
+    assert response.openai_result.error_code is None
+    assert response.openai_result.error_type is None
+    assert response.openai_result.error_message is None
+
+
+def verify_openai_response_on_error(response: OpenAIResponse):
+    assert response.openai_result.error_code
+    assert response.openai_result.error_type
+    assert response.openai_result.error_message
+    assert response.openai_result.text == ''
+    assert response.response_status != 200
+    assert response.response_reason != 'OK'
+    assert len(response.openai_result.choices) == 1
+    assert response.openai_result.timestamp is None
+    assert response.openai_result.timestamp_utc is None
+    assert response.openai_result.usage_total_tokens is None
+    assert response.openai_result.usage_prompt_tokens is None
+    assert response.openai_result.usage_completion_tokens is None
+    assert response.openai_result.cost_total is None
 
 
 class TestDatasets(DatasetsBase):

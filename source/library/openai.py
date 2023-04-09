@@ -1,10 +1,11 @@
 from datetime import datetime
-import asyncio  # for making API calls concurrently
+import asyncio
 import aiohttp  # for running API calls concurrently
 import json
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, \
     RetryError
+from source.library.openai_pricing import cost
 
 
 API_KEY = None
@@ -14,11 +15,15 @@ RETRY_MAX = 10
 
 
 class OpenAIResult(BaseModel):
-    result: dict | None
+    result: dict | None = {}
+
+    @validator('result', pre=True, always=True)
+    def set_x_to_empty_dict(cls, value):
+        return value or {}
 
     @property
     def choices(self) -> list:
-        return self.result['choices']
+        return self.result.get('choices', [dict(text='')])
 
     @property
     def text(self) -> str:
@@ -26,34 +31,62 @@ class OpenAIResult(BaseModel):
 
     @property
     def timestamp(self) -> int:
-        return self.result['created']
+        return self.result.get('created')
 
     @property
     def timestamp_utc(self) -> str:
-        dt = datetime.utcfromtimestamp(self.timestamp)
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
+        if self.timestamp:
+            dt = datetime.utcfromtimestamp(self.timestamp)
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            return None
 
     @property
     def model(self) -> str:
-        return self.result['model']
+        return self.result.get('model')
 
     @property
     def usage_total_tokens(self) -> int:
-        return self.result['usage']['total_tokens']
+        return self.result.get('usage', {}).get('total_tokens')
 
     @property
     def usage_prompt_tokens(self) -> int:
-        return self.result['usage']['prompt_tokens']
+        return self.result.get('usage', {}).get('prompt_tokens')
 
     @property
     def usage_completion_tokens(self) -> int:
-        return self.result['usage']['completion_tokens']
+        return self.result.get('usage', {}).get('completion_tokens')
+
+    @property
+    def cost_total(self) -> float:
+        if self.model and self.usage_total_tokens:
+            return cost(self.usage_total_tokens, model=self.model)
+        else:
+            return None
+
+    @property
+    def error_code(self) -> str:
+        if not self.result:
+            return 'Uknown Error (error probably occurred outside OpenAI API call)'
+        return self.result.get('error', {}).get('code')
+
+    @property
+    def error_type(self) -> str:
+        if not self.result:
+            return 'Uknown Error (error probably occurred outside OpenAI API call)'
+        return self.result.get('error', {}).get('type')
+
+    @property
+    def error_message(self) -> str:
+        if not self.result:
+            return 'Uknown Error (error probably occurred outside OpenAI API call)'
+        return self.result.get('error', {}).get('message')
 
 
 class OpenAIResponse(BaseModel):
     response_status: int
     response_reason: str
-    openai_result: OpenAIResult | None
+    openai_result: OpenAIResult
 
     @validator('response_reason')
     def clean_reason(cls, value: str):
@@ -125,7 +158,7 @@ async def post_async(
         return OpenAIResponse(
             response_status=429,
             response_reason='Too Many Requests',
-            openai_result=None,
+            openai_result=OpenAIResult(result=None),
         )
 
 
@@ -136,7 +169,7 @@ async def gather_payloads(url: str, payloads: list[dict]) -> list[OpenAIResponse
         return results
 
 
-def complete(
+def text_completion(
         model: str,
         prompts: list[str],
         max_tokens: int | list[int],
