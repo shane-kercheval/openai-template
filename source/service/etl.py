@@ -30,6 +30,6 @@ def transform(reddit__raw: pd.DataFrame) -> pd.DataFrame:
     reddit = reddit__raw.copy()
     assert not reddit['title'].isna().any() and not (reddit['title'].str.strip() == '').any()
     assert not reddit['post'].isna().any() and not (reddit['post'].str.strip() == '').any()
-    reddit['text'] = (reddit['title'] + ' - ' + reddit['post']).str.strip()
+    reddit['text'] = (reddit['title'].str.strip() + ' - ' + reddit['post'].str.strip())
     assert not reddit['text'].isna().any() and not (reddit['text'] == '').any()
     return reddit
