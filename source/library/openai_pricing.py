@@ -49,16 +49,26 @@ MODEL_NAME_TO_ENUM_LOOKUP = {
 
 
 @cache
-def get_encoding(model: OpenAIModels):
+def _get_encoding(model: OpenAIModels):
+    """Helper function that returns an encoding method for a given model."""
     return tiktoken.encoding_for_model(model.value)
 
 
 def _encode(value: str, model: OpenAIModels) -> list[int]:
-    encoding = get_encoding(model=model)
+    """Helper function that takes a string/model and returns an encoding list."""
+    encoding = _get_encoding(model=model)
     return encoding.encode(value)
 
 
 def num_tokens(value: str, model: OpenAIModels) -> int:
+    """
+    Determines the number of tokens that the str value will be converted into, based on a given
+    model.
+
+    Args:
+        value: the string
+        model: the OpenAI model used in the API call.
+    """
     return len(_encode(value=value, model=model))
 
 
@@ -69,6 +79,13 @@ def cost(value, model: OpenAIModels | str):
 
 @cost.register
 def _(n_tokens: int, model: OpenAIModels | str):
+    """
+    Calculates the cost of an OpenAI API call based on the number of tokens and the model.
+
+    Args:
+        n_tokens: the total number of tokens used in the API call and cost model.
+        model: the OpenAI model used in the API call.
+    """
     if isinstance(model, str):
         model = MODEL_NAME_TO_ENUM_LOOKUP[model]
     return PRICING_LOOKUP[model].cost(n_tokens=n_tokens)
@@ -76,4 +93,12 @@ def _(n_tokens: int, model: OpenAIModels | str):
 
 @cost.register
 def _(value: str, model: OpenAIModels | str):
+    """
+    Calculates the cost of an OpenAI API call based on a given string (the string is converted into
+    the corresponding number of tokens) and the model.
+
+    Args:
+        value: the string, which is used to determine the number of tokens
+        model: the OpenAI model used in the API call.
+    """
     return cost(num_tokens(value=value, model=model), model=model)
