@@ -10,7 +10,7 @@ This project contains
 - linting
 - unit tests
 - doctests
-- code coverage
+- code coverage (100%)
 - makefile and command line program (via click)
 
 # Running the Project
