@@ -1,11 +1,6 @@
 # project-template
 
-This repo contains a minimal project template.
-
-The structure and documents were heavily influenced from:
-
-- https://github.com/drivendata/cookiecutter-data-science
-- https://github.com/Azure/Azure-TDSP-ProjectTemplate
+This repo contains a minimal project template for making asynchronous OpenAI API calls. It has additional functionality that, for example, parses the responses and calculates the costs of API calls.
 
 ---
 
@@ -14,6 +9,8 @@ This project contains
 - dockerfile
 - linting
 - unit tests
+- doctests
+- code coverage
 - makefile and command line program (via click)
 
 # Running the Project
@@ -55,14 +52,3 @@ If you want to run the entire project from start to finish, including unit tests
 ```
 make all
 ```
-
-Common commands available from the Makefile are:
-
-- `make all`: The entire project can be built/ran with the simple command `make all` from the project directory, which runs all components (build virtual environments, run tests, run scripts, generate output, etc.)
-- `make clean`: Removes all virtual environments, python/R generated/hidden folders, and interim/processed data.
-- `make data`: Runs ETL scripts
-- `make explore`: Runs exploration notebooks and generate html/md documents.
-
-See `Makefile` for additional commands and implicit project DAG.
-
----

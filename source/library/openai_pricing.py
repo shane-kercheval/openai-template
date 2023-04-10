@@ -89,6 +89,10 @@ def _(n_tokens: int, model: OpenAIModels | str):
     Args:
         n_tokens: the total number of tokens used in the API call and cost model.
         model: the OpenAI model used in the API call.
+
+    Examples:
+        >>> cost(1_000_000, model=EmbeddingModels.ADA)
+        0.4
     """
     if isinstance(model, str):
         model = MODEL_NAME_TO_ENUM_LOOKUP[model]
@@ -104,5 +108,9 @@ def _(value: str, model: OpenAIModels | str):
     Args:
         value: the string, which is used to determine the number of tokens
         model: the OpenAI model used in the API call.
+
+    Examples:
+        >>> cost("This is a string", model=EmbeddingModels.ADA)
+        8e-05
     """
     return cost(num_tokens(value=value, model=model), model=model)
