@@ -1,8 +1,9 @@
+import pytest
 from source.library.openai_pricing import PRICING_LOOKUP, EmbeddingModels, _encode, num_tokens, \
     cost, InstructModels
 
 
-def test__costs__instruct_models():
+def test__cost__instruct_models():
     test_value = "This is a string"
     encoding = _encode(test_value, model=InstructModels.BABBAGE)
     assert len(encoding) > 0
@@ -26,7 +27,7 @@ def test__costs__instruct_models():
     _verify_cost(model=InstructModels.DAVINCI)
 
 
-def test__costs__embedding_models():
+def test__cost__embedding_models():
     test_value = "This is a string"
     encoding = _encode(test_value, model=EmbeddingModels.ADA)
     assert len(encoding) > 0
@@ -42,3 +43,8 @@ def test__costs__embedding_models():
         assert cost(test_value, model=model) == len(encoding) * pricing.price_per_tokens / pricing.per_x_tokens  # noqa
 
     _verify_cost(model=EmbeddingModels.ADA)
+
+
+def test__cost__invalid_type():
+    with pytest.raises(NotImplementedError):
+        cost([], model=InstructModels.BABBAGE)

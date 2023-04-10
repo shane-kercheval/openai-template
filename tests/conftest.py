@@ -98,14 +98,11 @@ class TestDatasets(DatasetsBase):
 
 
 class CustomAsyncMock(MagicMock):
-    async def __aenter__(self, *args, **kwargs):
-        return self
-
-    async def __aexit__(self, *args, **kwargs):
-        pass
+    """Used to test Async Erorrs"""
 
 
 class MockResponse:
+    """Used to test Async Erorrs"""
     def __init__(self, status):
         self.status = status
 

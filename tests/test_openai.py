@@ -96,6 +96,8 @@ def test__text_completion(OPENAI_MODEL, OPENAI_API_KEY):
     assert all([r.response_reason == 'OK' for r in responses])
     assert all([r.result is not None for r in responses])
     assert len(responses[0:2]) == 2
+    with pytest.raises(TypeError):
+        responses['test']
     verify_openai_instruct_response(responses[0], expected_model=OPENAI_MODEL)
     verify_openai_instruct_response(responses[1], expected_model=OPENAI_MODEL)
     verify_openai_instruct_response(responses[2], expected_model=OPENAI_MODEL)
@@ -148,6 +150,13 @@ def test__text_completion(OPENAI_MODEL, OPENAI_API_KEY):
     assert responses[0].has_data
     assert not responses[1].has_data
     assert responses[2].has_data
+
+
+def test__text_completion__invalid_model_type():
+    prompts = ["Question: What is the capital of Italy? "]
+    oai.API_KEY = 'key'
+    with pytest.raises(TypeError):
+        oai.text_completion(model='invalid_model', prompts=prompts, max_tokens=10)
 
 
 def test__complete__missing_api_key(OPENAI_MODEL):
@@ -228,3 +237,39 @@ def test__embeddings(OPENAI_API_KEY):
     assert responses[0].has_data
     assert not responses[1].has_data
     assert responses[2].has_data
+
+
+def test__text_embeddings__invalid_model_type():
+    inputs = ["Question: What is the capital of Italy? "]
+    oai.API_KEY = 'key'
+    with pytest.raises(TypeError):
+        oai.text_embeddings(model='invalid_model', inputs=inputs, max_tokens=10)
+
+
+def test__text_embeddings__max_tokens_exceeded():
+    inputs = [
+        "Question: What is the capital of Italy? ",
+        ' '.join((['hello '] * 20_000)),
+        "What is the capital of the United Kingdom?",
+    ]
+    oai.API_KEY = 'key'
+    with pytest.raises(ValueError):
+        oai.text_embeddings(model=EmbeddingModels.ADA, inputs=inputs, max_tokens=10)
+
+
+def test__OpenAIResponse():
+    response = oai.OpenAIResponse(
+        response_status=200,
+        response_reason=' OK ',
+        result=oai.OpenAIInstructResult(result=None)
+    )
+    assert response.response_status == 200
+    assert response.response_reason == 'OK'
+    assert response.result.result == {}
+
+    with pytest.raises(ValueError):
+        oai.OpenAIResponse(
+            response_status=-1,
+            response_reason=' OK ',
+            result=oai.OpenAIInstructResult(result=None)
+        )
