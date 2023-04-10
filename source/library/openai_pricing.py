@@ -1,3 +1,4 @@
+"""Helper functions used to calculate the cost of API calls based on https://openai.com/pricing"""
 from abc import ABC, abstractmethod
 from functools import cache, singledispatch
 from enum import Enum
@@ -6,7 +7,10 @@ import tiktoken
 
 
 class OpenAIModels(Enum):
-    pass
+    """
+    Enum used to define the types of OpenAI Models available. This Base enum is used for type
+    hinting only.
+    """
 
 
 class InstructModels(OpenAIModels):

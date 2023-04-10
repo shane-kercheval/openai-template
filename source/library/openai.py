@@ -1,7 +1,8 @@
+"""Helper functions and classes used to call the OpenAPI asynchronously, and parse the results."""
 from abc import abstractmethod
 from datetime import datetime
 import asyncio
-import aiohttp  # for running API calls concurrently
+import aiohttp
 import json
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, \
