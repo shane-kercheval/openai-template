@@ -13,7 +13,9 @@ docker_down:
 	docker compose down --remove-orphans
 
 docker_rebuild:
+	cp ~/.openai_api_key .
 	docker compose -f docker-compose.yml build --no-cache
+	rm .openai_api_key
 
 docker_bash:
 	docker compose -f docker-compose.yml up --build bash
