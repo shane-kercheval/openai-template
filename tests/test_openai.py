@@ -1,9 +1,10 @@
 import pytest
 import aiohttp
 from tenacity import wait_none
-import source.library.openai as oai
+from source.library.openai import OpenAI
+from source.library.openai_utilities import ExceededMaxTokensError, InvalidModelTypeError, \
+    MissingApiKeyError, OpenAIInstructResult, OpenAIResponse, _post_async_with_retry, post_async
 from source.library.openai_pricing import EmbeddingModels, cost, _encode
-
 from tests.conftest import CustomAsyncMock, MockResponse, verify_openai_embedding_response, \
     verify_openai_instruct_response, verify_openai_instruct_response_on_error
 
@@ -14,21 +15,19 @@ async def test__api_post(
         OPENAI_URL_COMPLETION,
         OPENAI_MODEL,
         babbage_model_payload__italy_capital):
-    assert OPENAI_API_KEY
-    oai.API_KEY = OPENAI_API_KEY
-
     async with aiohttp.ClientSession() as session:
-        response, result = await oai.post_async(
+        response, result = await post_async(
             session=session,
             url=OPENAI_URL_COMPLETION,
+            api_key=OPENAI_API_KEY,
             payload=babbage_model_payload__italy_capital,
         )
     # Create OpenAIResponse to more easily extract/test values from OpenAI
     # This object will be created for the end-user for higher-level functions
-    oai_response = oai.OpenAIResponse(
+    oai_response = OpenAIResponse(
         response_status=response.status,
         response_reason=response.reason,
-        result=oai.OpenAIInstructResult(result=result),
+        result=OpenAIInstructResult(result=result),
     )
     assert 'Rome' in oai_response.result.reply
     verify_openai_instruct_response(response=oai_response, expected_model=OPENAI_MODEL)
@@ -38,19 +37,19 @@ async def test__api_post(
 async def test__api_post__invalid_api_key(
         OPENAI_URL_COMPLETION,
         babbage_model_payload__italy_capital):
-    oai.API_KEY = 'invalid'
     async with aiohttp.ClientSession() as session:
-        response, result = await oai.post_async(
+        response, result = await post_async(
             session=session,
             url=OPENAI_URL_COMPLETION,
+            api_key='invalid',
             payload=babbage_model_payload__italy_capital,
         )
     # Create OpenAIResponse to more easily extract/test values from OpenAI
     # This object will be created for the end-user for higher-level functions
-    oai_response = oai.OpenAIResponse(
+    oai_response = OpenAIResponse(
         response_status=response.status,
         response_reason=response.reason,
-        result=oai.OpenAIInstructResult(result=result),
+        result=OpenAIInstructResult(result=result),
     )
     assert oai_response.response_status == 401
     assert oai_response.response_reason == 'Unauthorized'
@@ -67,14 +66,19 @@ async def test__post_async__429_error():
 
     async with aiohttp.ClientSession() as session:
         session.post = post_mock
-        oai._post_async_with_retry.retry.wait = wait_none()
-        response, result = await oai.post_async(session, url, payload)
+        _post_async_with_retry.retry.wait = wait_none()
+        response, result = await post_async(
+            session=session,
+            url=url,
+            api_key='value',
+            payload=payload
+        )
         # Create OpenAIResponse to more easily extract/test values from OpenAI
         # This object will be created for the end-user for higher-level functions
-        oai_response = oai.OpenAIResponse(
+        oai_response = OpenAIResponse(
             response_status=response.status,
             response_reason=response.reason,
-            result=oai.OpenAIInstructResult(result=result),
+            result=OpenAIInstructResult(result=result),
         )
         assert oai_response.response_status == 429
         assert oai_response.response_reason == 'Too Many Requests'
@@ -89,7 +93,7 @@ def test__text_completion(OPENAI_MODEL, OPENAI_API_KEY):
         "What is the capital of France?",
         "What is the capital of the United Kingdom?",
     ]
-    oai.API_KEY = OPENAI_API_KEY
+    oai = OpenAI(api_key=OPENAI_API_KEY)
     responses = oai.text_completion(model=OPENAI_MODEL, prompts=prompts, max_tokens=10)
     assert len(responses) == len(prompts)
     assert all([r.response_status == 200 for r in responses])
@@ -154,20 +158,17 @@ def test__text_completion(OPENAI_MODEL, OPENAI_API_KEY):
 
 def test__text_completion__invalid_model_type():
     prompts = ["Question: What is the capital of Italy? "]
-    oai.API_KEY = 'key'
-    with pytest.raises(TypeError):
+    oai = OpenAI(api_key='key')
+    with pytest.raises(InvalidModelTypeError):
         oai.text_completion(model='invalid_model', prompts=prompts, max_tokens=10)
 
 
-def test__complete__missing_api_key(OPENAI_MODEL):
-    prompts = [
-        "Question: What is the capital of Italy? ",
-        "What is the capital of France?",
-        "What is the capital of the United Kingdom?",
-    ]
-    oai.API_KEY = None
-    with pytest.raises(oai.MissingApiKeyError):
-        oai.text_completion(model=OPENAI_MODEL, prompts=prompts, max_tokens=10)
+def test__complete__missing_api_key():
+    with pytest.raises(MissingApiKeyError):
+        OpenAI(api_key='')
+
+    with pytest.raises(MissingApiKeyError):
+        OpenAI(api_key=None)
 
 
 def test__embeddings(OPENAI_API_KEY):
@@ -176,7 +177,7 @@ def test__embeddings(OPENAI_API_KEY):
         "What is the capital of France?",
         "What is the capital of the United Kingdom?",
     ]
-    oai.API_KEY = OPENAI_API_KEY
+    oai = OpenAI(api_key=OPENAI_API_KEY)
     responses = oai.text_embeddings(model=EmbeddingModels.ADA, inputs=inputs)
     assert len(responses) == len(inputs)
     assert all([r.response_status == 200 for r in responses])
@@ -241,8 +242,8 @@ def test__embeddings(OPENAI_API_KEY):
 
 def test__text_embeddings__invalid_model_type():
     inputs = ["Question: What is the capital of Italy? "]
-    oai.API_KEY = 'key'
-    with pytest.raises(TypeError):
+    oai = OpenAI(api_key='key')
+    with pytest.raises(InvalidModelTypeError):
         oai.text_embeddings(model='invalid_model', inputs=inputs, max_tokens=10)
 
 
@@ -252,24 +253,24 @@ def test__text_embeddings__max_tokens_exceeded():
         ' '.join((['hello '] * 20_000)),
         "What is the capital of the United Kingdom?",
     ]
-    oai.API_KEY = 'key'
-    with pytest.raises(ValueError):
+    oai = OpenAI(api_key='key')
+    with pytest.raises(ExceededMaxTokensError):
         oai.text_embeddings(model=EmbeddingModels.ADA, inputs=inputs, max_tokens=10)
 
 
 def test__OpenAIResponse():
-    response = oai.OpenAIResponse(
+    response = OpenAIResponse(
         response_status=200,
         response_reason=' OK ',
-        result=oai.OpenAIInstructResult(result=None)
+        result=OpenAIInstructResult(result=None)
     )
     assert response.response_status == 200
     assert response.response_reason == 'OK'
     assert response.result.result == {}
 
     with pytest.raises(ValueError):
-        oai.OpenAIResponse(
+        OpenAIResponse(
             response_status=-1,
             response_reason=' OK ',
-            result=oai.OpenAIInstructResult(result=None)
+            result=OpenAIInstructResult(result=None)
         )

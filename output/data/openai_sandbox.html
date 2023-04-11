@@ -15112,14 +15112,14 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">run</span> &quot;/code/source/notebooks/notebook_settings.py&quot;
-<span class="kn">import</span> <span class="nn">source.library.openai</span> <span class="k">as</span> <span class="nn">oai</span>
+<span class="kn">from</span> <span class="nn">source.library.openai</span> <span class="kn">import</span> <span class="n">OpenAI</span><span class="p">,</span> <span class="n">InstructModels</span><span class="p">,</span> <span class="n">EmbeddingModels</span><span class="p">,</span> <span class="n">num_tokens</span><span class="p">,</span> <span class="n">cost</span>
 <span class="c1"># This is needed because openai.text_completion calls asynchronous functions but </span>
 <span class="c1"># Jupyter is already running its own event loop.</span>
 <span class="kn">import</span> <span class="nn">nest_asyncio</span>
 <span class="n">nest_asyncio</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;/.openai_api_key&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
-    <span class="n">oai</span><span class="o">.</span><span class="n">API_KEY</span> <span class="o">=</span> <span class="n">handle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">oai</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">handle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 </pre></div>
 
      </div>
@@ -15144,7 +15144,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 <span class="n">packages</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;holoviews&#39;</span><span class="p">,</span> <span class="s1">&#39;bokeh&#39;</span><span class="p">,</span> <span class="s1">&#39;leather&#39;</span><span class="p">,</span> <span class="s1">&#39;pymc3&#39;</span><span class="p">,</span> <span class="s1">&#39;easyfinance&#39;</span><span class="p">]</span>
 <span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">generate_prompt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">packages</span><span class="p">]</span>
-<span class="n">responses</span> <span class="o">=</span> <span class="n">oai</span><span class="o">.</span><span class="n">text_completion</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">oai</span><span class="o">.</span><span class="n">InstructModels</span><span class="o">.</span><span class="n">BABBAGE</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">responses</span> <span class="o">=</span> <span class="n">oai</span><span class="o">.</span><span class="n">text_completion</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">InstructModels</span><span class="o">.</span><span class="n">BABBAGE</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 <span class="n">responses</span>
 </pre></div>
 
@@ -15167,7 +15167,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>OpenAIResponses(responses=[OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC56Sb5cbXzZH5VUDaoF5sGILbE&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe holoviews python package is a library that allows you to create and view holoviews files.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 25, &#39;total_tokens&#39;: 69}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC52b8fO6PTrK0e7CDmX7qdG40E&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe bokeh python package is a library that allows you to create bokeh effects in your videos.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: None}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 43, &#39;completion_tokens&#39;: 24, &#39;total_tokens&#39;: 67}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC5nQFwJTmOch9YEY16E0b6G74M&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nLeather Python is a Python package that provides a library for working with leather.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 41, &#39;completion_tokens&#39;: 18, &#39;total_tokens&#39;: 59}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC56YVTcco4ovPZXdFONi3T2hZC&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\npymc3 is a Python package that provides a library for managing and analyzing machine learning models.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 22, &#39;total_tokens&#39;: 66}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73XC5uhxEG7GCimqnS1YiUNddbNE8&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681076937, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe easyfinance package is a Python library that helps you easily calculate financial ratios.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 43, &#39;completion_tokens&#39;: 19, &#39;total_tokens&#39;: 62}}))])</pre>
+<pre>OpenAIResponses(responses=[OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73zDAnq3fNcyEdOWnOCkALhUiT1T8&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681184636, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe holoviews python package is a library that allows you to create and view holoviews files.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 25, &#39;total_tokens&#39;: 69}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73zDAJKX12seAMDMu2qdChNJrCBZ8&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681184636, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe bokeh python package is a library that allows you to create bokeh effects in your videos.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: None}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 43, &#39;completion_tokens&#39;: 24, &#39;total_tokens&#39;: 67}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73zDAF6D6CgYw8szqT7ZJBNWT3BiN&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681184636, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nLeather Python is a Python package that provides a library for working with leather.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 41, &#39;completion_tokens&#39;: 18, &#39;total_tokens&#39;: 59}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73zDABHeDok4eKNv50Z8BcOsqhX5P&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681184636, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\npymc3 is a Python package that provides a library for managing and analyzing machine learning models.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 22, &#39;total_tokens&#39;: 66}})), OpenAIResponse(response_status=200, response_reason=&#39;OK&#39;, result=OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73zDA0EVNfQmbRBDwjKGldwqUKR5w&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681184636, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe easyfinance package is a Python library that helps you easily calculate financial ratios.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 43, &#39;completion_tokens&#39;: 19, &#39;total_tokens&#39;: 62}}))])</pre>
 </div>
 
 </div>
@@ -15226,7 +15226,46 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">package</span><span class="p">,</span> <span class="n">response</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">packages</span><span class="p">,</span> <span class="n">responses</span><span class="p">):</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">responses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>OpenAIInstructResult(result={&#39;id&#39;: &#39;cmpl-73zDAnq3fNcyEdOWnOCkALhUiT1T8&#39;, &#39;object&#39;: &#39;text_completion&#39;, &#39;created&#39;: 1681184636, &#39;model&#39;: &#39;text-babbage-001&#39;, &#39;choices&#39;: [{&#39;text&#39;: &#39;\n\nThe holoviews python package is a library that allows you to create and view holoviews files.&#39;, &#39;index&#39;: 0, &#39;logprobs&#39;: None, &#39;finish_reason&#39;: &#39;stop&#39;}], &#39;usage&#39;: {&#39;prompt_tokens&#39;: 44, &#39;completion_tokens&#39;: 25, &#39;total_tokens&#39;: 69}})</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">package</span><span class="p">,</span> <span class="n">response</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">packages</span><span class="p">,</span> <span class="n">responses</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">-----</span><span class="se">\n</span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">usage_total_tokens</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">cost_total</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -15303,7 +15342,7 @@ The easyfinance package is a Python library that helps you easily calculate fina
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">responses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">usage_completion_tokens</span>
@@ -15322,7 +15361,7 @@ The easyfinance package is a Python library that helps you easily calculate fina
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 
 
 
@@ -15342,7 +15381,7 @@ The easyfinance package is a Python library that helps you easily calculate fina
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">responses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">usage_total_tokens</span>
@@ -15361,7 +15400,7 @@ The easyfinance package is a Python library that helps you easily calculate fina
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 
 
 
