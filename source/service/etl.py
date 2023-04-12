@@ -7,7 +7,6 @@ from helpsk.logging import log_function_call, log_timer, Timer
 from source.library.openai import OpenAI, EmbeddingModels
 
 
-
 @log_function_call
 @log_timer
 def extract() -> pd.DataFrame:
