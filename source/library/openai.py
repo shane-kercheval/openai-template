@@ -92,7 +92,7 @@ class OpenAI:
             self,
             model: EmbeddingModels,
             inputs: list[str],
-            max_tokens: int = 8191) -> OpenAIResponse:
+            max_tokens: int = 8191) -> OpenAIResponses:
         """
         Generate text embeddings for a list of inputs using OpenAI API.
 

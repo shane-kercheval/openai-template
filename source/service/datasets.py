@@ -42,6 +42,12 @@ class Datasets(DatasetsBase):
             directory=config.dir_data_processed(),
             cache=False,
         )
+        self.reddit_embeddings = PickledDataLoader(
+            description="Embeddings from reddit 'text' (title + post)",
+            dependencies=['reddit'],
+            directory=config.dir_data_processed(),
+            cache=False,
+        )
         # call __init__() after defining properties
         super().__init__()
 

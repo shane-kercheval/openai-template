@@ -62,7 +62,10 @@ data_extract:
 data_transform:
 	python source/entrypoints/cli.py transform
 
-data: data_extract data_transform
+embeddings:
+	python source/entrypoints/cli.py get-embeddings
+
+data: data_extract data_transform 
 
 notebooks:
 	jupyter nbconvert --execute --to html source/notebooks/datasets.ipynb

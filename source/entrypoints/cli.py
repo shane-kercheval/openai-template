@@ -61,5 +61,12 @@ def transform():
     # responses = openai.text_completion(model='text-babbage-001', prompts=prompts, max_tokens=200)
 
 
+@main.command()
+def get_embeddings():
+    reddit = DATA.reddit.load()
+    embeddings = etl.get_embeddings(inputs=reddit['text'].tolist())
+    DATA.reddit_embeddings.save(embeddings)
+
+
 if __name__ == '__main__':
     main()
