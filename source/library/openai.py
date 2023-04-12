@@ -115,7 +115,7 @@ class OpenAI:
         def _create_payload(_input: str):
             return dict(
                 model=model.value,
-                input=_input,
+                input=_input.replace('\n', ' '),
             )
 
         payloads = [_create_payload(_input=i) for i in inputs]
