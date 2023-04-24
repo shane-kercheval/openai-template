@@ -1,2 +1,4 @@
-2023-04-07 04:43:06 - INFO     | Loading data `credit` from `data/processed/credit.pkl`
-2023-04-07 04:43:08 - INFO     | Loading data `credit` from `data/processed/credit.pkl`
+2023-04-24 16:30:53 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
+2023-04-24 16:30:56 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
+2023-04-24 16:31:01 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
+2023-04-24 16:31:01 - INFO     | Loading data `reddit_embeddings` from `data/processed/reddit_embeddings.pkl`

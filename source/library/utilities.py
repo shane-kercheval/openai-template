@@ -1,8 +1,11 @@
+"""Misc utilities."""
+
+
 def split_list(items: list, n_groups: int) -> list[list]:
     """
     Splits a list of items into n groups.
 
-    Parameters:
+    Args:
         items (list): The list of items to split.
         n_groups (int): The number of groups to split the items into.
 
@@ -24,4 +27,4 @@ def split_list(items: list, n_groups: int) -> list[list]:
         [[], [], []]
     """
     k, m = divmod(len(items), n_groups)
-    return list(items[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n_groups))
+    return [items[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n_groups)]

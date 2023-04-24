@@ -1,9 +1,11 @@
-"""Helper functions used to calculate the cost of API calls based on https://openai.com/pricing"""
+"""Helper functions used to calculate the cost of API calls based on https://openai.com/pricing."""
 from abc import ABC, abstractmethod
 from functools import cache, singledispatch
 from enum import Enum
 from pydantic import BaseModel
 import tiktoken
+
+import source.config.config as config
 
 
 class OpenAIModels(Enum):
@@ -14,35 +16,47 @@ class OpenAIModels(Enum):
 
 
 class InstructModels(OpenAIModels):
+    """Defines the models that can be used with InstructGPT."""
+
     BABBAGE = 'text-babbage-001'
     CURIE = 'text-curie-001'
     DAVINCI = 'text-davinci-003'
 
 
 class EmbeddingModels(OpenAIModels):
+    """Defines the embedding models available."""
+
     ADA = 'text-embedding-ada-002'
 
 
 class ModelPricing(BaseModel, ABC):
+    """Base class defining interface for classes that calculate the cost based on # of tokens."""
+
     @abstractmethod
     def cost(self, n_tokens: int) -> float:
         """Functiont that takes the number of tokens and returns the estimated cost."""
 
 
 class PerXTokensPricing(ModelPricing):
+    """Logic for strategies based on `$ per X tokens`."""
+
     price_per_tokens: float
     per_x_tokens: int
 
     def cost(self, n_tokens: int) -> float:
+        """Returns the cost for using `n_tokens`."""
         return self.price_per_tokens * (n_tokens / self.per_x_tokens)
 
 
-PRICING_LOOKUP = {
-    EmbeddingModels.ADA: PerXTokensPricing(price_per_tokens=0.0004, per_x_tokens=1_000),
-    InstructModels.BABBAGE: PerXTokensPricing(price_per_tokens=0.0005, per_x_tokens=1_000),
-    InstructModels.CURIE: PerXTokensPricing(price_per_tokens=0.002, per_x_tokens=1_000),
-    InstructModels.DAVINCI: PerXTokensPricing(price_per_tokens=0.02, per_x_tokens=1_000),
-}
+config.openai_pricing()
+
+
+# PRICING_LOOKUP = {
+#     EmbeddingModels.ADA: PerXTokensPricing(price_per_tokens=0.0004, per_x_tokens=1_000),
+#     InstructModels.BABBAGE: PerXTokensPricing(price_per_tokens=0.0005, per_x_tokens=1_000),
+#     InstructModels.CURIE: PerXTokensPricing(price_per_tokens=0.002, per_x_tokens=1_000),
+#     InstructModels.DAVINCI: PerXTokensPricing(price_per_tokens=0.02, per_x_tokens=1_000),
+# }
 
 MODEL_NAME_TO_ENUM_LOOKUP = {
     EmbeddingModels.ADA.value: EmbeddingModels.ADA,
@@ -52,8 +66,15 @@ MODEL_NAME_TO_ENUM_LOOKUP = {
 }
 
 
+PRICING_LOOKUP = {
+    MODEL_NAME_TO_ENUM_LOOKUP[p['model']]:
+        PerXTokensPricing(price_per_tokens=p['price_per_tokens'], per_x_tokens=p['per_x_tokens'])
+    for p in config.openai_pricing()
+}
+
+
 @cache
-def _get_encoding(model: OpenAIModels):
+def _get_encoding(model: OpenAIModels) -> tiktoken.Encoding:
     """Helper function that returns an encoding method for a given model."""
     return tiktoken.encoding_for_model(model.value)
 
@@ -63,26 +84,28 @@ def _encode(value: str, model: OpenAIModels) -> list[int]:
     encoding = _get_encoding(model=model)
     return encoding.encode(value)
 
-
 def num_tokens(value: str, model: OpenAIModels) -> int:
     """
     Determines the number of tokens that the str value will be converted into, based on a given
     model.
 
     Args:
-        value: the string
-        model: the OpenAI model used in the API call.
+        value:
+            the string
+        model:
+            the OpenAI model used in the API call.
     """
     return len(_encode(value=value, model=model))
 
 
 @singledispatch
-def cost(value, model: OpenAIModels | str):
+def cost(value: object, model: OpenAIModels | str) -> float:
+    """Calculate the cost based either on the number of tokens (int) or string value."""
     raise NotImplementedError("Unsupported data type")
 
 
 @cost.register
-def _(n_tokens: int, model: OpenAIModels | str):
+def _(n_tokens: int, model: OpenAIModels | str) -> float:
     """
     Calculates the cost of an OpenAI API call based on the number of tokens and the model.
 
@@ -100,7 +123,7 @@ def _(n_tokens: int, model: OpenAIModels | str):
 
 
 @cost.register
-def _(value: str, model: OpenAIModels | str):
+def _(value: str, model: OpenAIModels | str) -> float:
     """
     Calculates the cost of an OpenAI API call based on a given string (the string is converted into
     the corresponding number of tokens) and the model.

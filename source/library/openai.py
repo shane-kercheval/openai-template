@@ -1,4 +1,5 @@
 """Helper functions and classes used to call the OpenAPI asynchronously, and parse the results."""
+
 import asyncio
 from source.library.openai_pricing import EmbeddingModels, InstructModels, num_tokens, cost  # noqa
 from source.library.openai_utilities import ExceededMaxTokensError, InvalidModelTypeError, \
@@ -7,6 +8,11 @@ from source.library.openai_utilities import ExceededMaxTokensError, InvalidModel
 
 
 class OpenAI:
+    """
+    Wrapper around OpenAI API that implement asynchronous requests and return objects that wrap
+    the responses and make it easy to extract data.
+    """
+
     def __init__(self, api_key: str) -> None:
         if not api_key:
             raise MissingApiKeyError("Must pass a non-empty API key")
@@ -22,7 +28,7 @@ class OpenAI:
             n: int = 1,
             stream: bool = False,
             logprobs: int | None = None,
-            stop: str | None = None
+            stop: str | None = None,
             ) -> OpenAIResponses:
         """
         Generate text completions for a list of prompts using OpenAI API.
@@ -51,25 +57,24 @@ class OpenAI:
             stop (str | None, optional):
                 Token at which to stop generating tokens. Defaults to None.
         """
-
         if not isinstance(model, InstructModels):
             raise InvalidModelTypeError("model parameter must be an instance of InstructModels")
 
         if isinstance(max_tokens, int):
             max_tokens = [max_tokens] * len(prompts)
 
-        def _create_payload(_prompt: str, _max_tokens: int):
-            return dict(
-                model=model.value,
-                prompt=_prompt,
-                max_tokens=_max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                n=n,
-                stream=stream,
-                logprobs=logprobs,
-                stop=stop,
-            )
+        def _create_payload(_prompt: str, _max_tokens: int) -> dict:
+            return {
+                "model": model.value,
+                "prompt": _prompt,
+                "max_tokens": _max_tokens,
+                "temperature": temperature,
+                "top_p": top_p,
+                "n": n,
+                "stream": stream,
+                "logprobs": logprobs,
+                "stop": stop,
+            }
         payloads = [
             _create_payload(_prompt=p, _max_tokens=m)
             for p, m in zip(prompts, max_tokens, strict=True)
@@ -85,7 +90,7 @@ class OpenAI:
             )
 
         return OpenAIResponses(
-            responses=[convert_response(x[0].status, x[0].reason, x[1]) for x in responses]
+            responses=[convert_response(x[0].status, x[0].reason, x[1]) for x in responses],
         )
 
     def text_embeddings(
@@ -109,14 +114,14 @@ class OpenAI:
             raise InvalidModelTypeError("model must be an instance of EmbeddingModels")
         if not all(num_tokens(value=x, model=model) <= max_tokens for x in inputs):
             raise ExceededMaxTokensError(
-                f"All inputs must have fewer tokens than the maximum allowed ({max_tokens})"
+                f"All inputs must have fewer tokens than the maximum allowed ({max_tokens})",
             )
 
-        def _create_payload(_input: str):
-            return dict(
-                model=model.value,
-                input=_input.replace('\n', ' '),
-            )
+        def _create_payload(_input: str) -> dict:
+            return {
+                "model": model.value,
+                "input": _input.replace('\n', ' '),
+            }
 
         payloads = [_create_payload(_input=i) for i in inputs]
         url = 'https://api.openai.com/v1/embeddings'
@@ -130,5 +135,5 @@ class OpenAI:
             )
 
         return OpenAIResponses(
-            responses=[convert_response(x[0].status, x[0].reason, x[1]) for x in responses]
+            responses=[convert_response(x[0].status, x[0].reason, x[1]) for x in responses],
         )

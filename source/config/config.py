@@ -1,27 +1,39 @@
+"""Provides convenience functions for configuration settings."""
+
 from helpsk.utility import open_yaml
+
 
 CONFIG = open_yaml('source/config/config.yaml')
 
 
-def dir_ouput():
-    return CONFIG['OUTPUT']['DIRECTORY']
+def dir_ouput():  # noqa: ANN201, D103
+    return CONFIG['output']['directory']
 
 
-def dir_data_raw():
-    return CONFIG['DATA']['RAW_DIRECTORY']
+def dir_data_raw():  # noqa: ANN201, D103
+    return CONFIG['data']['raw_directory']
 
 
-def dir_data_interim():
-    return CONFIG['DATA']['INTERIM_DIRECTORY']
+def dir_data_interim():  # noqa: ANN201, D103
+    return CONFIG['data']['interim_directory']
 
 
-def dir_data_external():
-    return CONFIG['DATA']['EXTERNAL_DIRECTORY']
+def dir_data_external():  # noqa: ANN201, D103
+    return CONFIG['data']['external_directory']
 
 
-def dir_data_processed():
-    return CONFIG['DATA']['PROCESSED_DIRECTORY']
+def dir_data_processed():  # noqa: ANN201, D103
+    return CONFIG['data']['processed_directory']
 
 
-def dir_notebooks():
-    return CONFIG['NOTEBOOKS']['DIRECTORY']
+def dir_notebooks():  # noqa: ANN201, D103
+    return CONFIG['notebooks']['directory']
+
+
+def openai_pricing():  # noqa: ANN201, D103
+    return CONFIG['openai']['pricing']
+
+
+def openai_token():  # noqa: ANN201, D103
+    with open(CONFIG['openai']['token_path']) as handle:
+        return handle.read().strip()

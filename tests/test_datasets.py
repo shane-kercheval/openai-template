@@ -1,9 +1,14 @@
+"""Tests the functionality from the Datasets classes."""
+
 import os
 import glob
 import pandas as pd
 
+from tests.conftest import TestDatasets
 
-def test__datasets__caching(datasets_fake_cache):
+
+def test__datasets__caching(datasets_fake_cache: TestDatasets) -> None:
+    """Tests that caching works properly for Datasets classes."""
     data = datasets_fake_cache
     assert data.datasets == ['dataset_1', 'dataset_3_csv', 'other_dataset_2']
     assert data.descriptions == [
@@ -59,7 +64,8 @@ def test__datasets__caching(datasets_fake_cache):
     os.remove('./dataset_3_csv.csv')
 
 
-def test__datasets_no_cache(datasets_fake_no_cache):
+def test__datasets_no_cache(datasets_fake_no_cache: TestDatasets) -> None:
+    """Tests that non-caching works properly for Datasets classes."""
     data = datasets_fake_no_cache
     assert data.datasets == ['dataset_1', 'dataset_3_csv', 'other_dataset_2']
     assert data.descriptions == [

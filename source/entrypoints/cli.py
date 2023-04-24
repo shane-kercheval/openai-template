@@ -1,12 +1,13 @@
 """
-This file contains the functions for the command line interface. The makefile calls the commands
-defined in this file.
+Function definitions for the command line interface. The makefile calls the commands defined in
+this file.
 
 For help in terminal, navigate to the project directory, run the docker container, and from within
 the container run the following examples:
-    - `python3.9 source/scripts/commands.py --help`
-    - `python3.9 source/scripts/commands.py extract --help`
+    - `source/scripts/commands.py --help`
+    - `source/scripts/commands.py extract --help`
 """
+
 import logging.config
 import logging
 import click
@@ -19,28 +20,27 @@ from source.service.datasets import DATA
 logging.config.fileConfig(
     "source/config/logging_to_file.conf",
     defaults={'logfilename': 'output/log.log'},
-    disable_existing_loggers=False
+    disable_existing_loggers=False,
 )
 
 
 @click.group()
-def main():
-    """
-    Logic For Extracting and Transforming Datasets
-    """
+def main() -> None:
+    """Logic For Extracting and Transforming Datasets."""
     pass
 
 
 @main.command()
-def extract():
+def extract() -> None:
+    """Extracts the data."""
     logging.info("Extracting Data")
     reddit = etl.extract()
     DATA.raw__reddit.save(reddit)
 
 
 @main.command()
-def transform():
-    """This function transforms the reddit data."""
+def transform() -> None:
+    """T ransforms the reddit data."""
     raw__reddit = DATA.raw__reddit.load()
     logging.info("Transforming reddit data.")
     reddit = etl.transform(raw__reddit)
@@ -62,7 +62,8 @@ def transform():
 
 
 @main.command()
-def get_embeddings():
+def get_embeddings() -> None:
+    """Gets the imbeddings for the reddit 'text' column."""
     reddit = DATA.reddit.load()
     embeddings = etl.get_embeddings(inputs=reddit['text'].tolist())
     DATA.reddit_embeddings.save(embeddings)

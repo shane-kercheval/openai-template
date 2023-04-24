@@ -35,12 +35,12 @@ docker_all:
 # Project
 ####
 linting:
-	flake8 source/config
-	flake8 source/entrypoints
-	flake8 source/library
-	flake8 source/notebooks
-	flake8 source/service
-	flake8 tests
+	ruff check source/config
+	ruff check source/entrypoints
+	ruff check source/library
+	ruff check source/notebooks
+	ruff check source/service
+	ruff check tests
 
 unittests:
 	rm -f tests/test_files/log.log
