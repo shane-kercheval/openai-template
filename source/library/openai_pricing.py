@@ -48,9 +48,6 @@ class PerXTokensPricing(ModelPricing):
         return self.price_per_tokens * (n_tokens / self.per_x_tokens)
 
 
-config.openai_pricing()
-
-
 MODEL_NAME_TO_ENUM_LOOKUP = {
     EmbeddingModels.ADA.value: EmbeddingModels.ADA,
     InstructModels.BABBAGE.value: InstructModels.BABBAGE,
