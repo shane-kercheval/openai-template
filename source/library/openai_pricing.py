@@ -84,6 +84,7 @@ def _encode(value: str, model: OpenAIModels) -> list[int]:
     encoding = _get_encoding(model=model)
     return encoding.encode(value)
 
+
 def num_tokens(value: str, model: OpenAIModels) -> int:
     """
     Determines the number of tokens that the str value will be converted into, based on a given
