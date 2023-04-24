@@ -51,13 +51,6 @@ class PerXTokensPricing(ModelPricing):
 config.openai_pricing()
 
 
-# PRICING_LOOKUP = {
-#     EmbeddingModels.ADA: PerXTokensPricing(price_per_tokens=0.0004, per_x_tokens=1_000),
-#     InstructModels.BABBAGE: PerXTokensPricing(price_per_tokens=0.0005, per_x_tokens=1_000),
-#     InstructModels.CURIE: PerXTokensPricing(price_per_tokens=0.002, per_x_tokens=1_000),
-#     InstructModels.DAVINCI: PerXTokensPricing(price_per_tokens=0.02, per_x_tokens=1_000),
-# }
-
 MODEL_NAME_TO_ENUM_LOOKUP = {
     EmbeddingModels.ADA.value: EmbeddingModels.ADA,
     InstructModels.BABBAGE.value: InstructModels.BABBAGE,
