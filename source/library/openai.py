@@ -39,23 +39,42 @@ class OpenAI:
             prompts (list[str]):
                 List of input prompts to generate completions for.
             max_tokens (int | list[int]):
-                Maximum number of tokens to generate for each prompt.
+                From OpenAI:
+                ```
+                The maximum number of tokens to generate in the completion.
+                The token count of your prompt plus max_tokens cannot exceed the model's context
+                length. Most models have a context length of 2048 tokens (except for the newest
+                models, which support 4096).
+                ```
+
                 If an integer is provided, it will be used for all prompts.
                 If a list is provided, it should have the same length as prompts.
             temperature (float, optional):
-                Sampling temperature. Higher values make output more random.
-                                        Defaults to 0.
+                From OpenAI:
+                ```
+                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make
+                the output more random, while lower values like 0.2 will make it more focused and
+                deterministic.
+                We generally recommend altering this or top_p but not both.
+                ```
             top_p (float, optional):
-                Probability mass cutoff for nucleus sampling. Defaults to 1.
+                From OpenAI:
+                ```
+                An alternative to sampling with temperature, called nucleus sampling, where the
+                model considers the results of the tokens with top_p probability mass. So 0.1 means
+                only the tokens comprising the top 10% probability mass are considered.
+                We generally recommend altering this or temperature but not both.
+                ```
             n (int, optional):
                 Number of completions to generate for each prompt. Defaults to 1.
             stream (bool, optional):
                 Whether to stream the API response. Defaults to False.
             logprobs (int | None, optional):
-                Number of log probabilities to return. None for not returning.
-                                            Defaults to None.
+                Include the log probabilities on the logprobs most likely tokens, as well the
+                chosen tokens.
             stop (str | None, optional):
-                Token at which to stop generating tokens. Defaults to None.
+                Up to 4 sequences where the API will stop generating further tokens. The returned
+                text will not contain the stop sequence.
         """
         if not isinstance(model, InstructModels):
             raise InvalidModelTypeError("model parameter must be an instance of InstructModels")
