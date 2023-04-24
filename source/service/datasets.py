@@ -35,19 +35,19 @@ class Datasets(DatasetsBase):
         self.raw__reddit = PickledDataLoader(
             description="reddit data - raw",
             dependencies=[],
-            directory=config.dir_data_raw(),
+            directory=config.DIR_DATA_RAW,
             cache=False,
         )
         self.reddit = PickledDataLoader(
             description="reddit data",
             dependencies=['raw__reddit'],
-            directory=config.dir_data_processed(),
+            directory=config.DIR_DATA_PROCESSED,
             cache=False,
         )
         self.reddit_embeddings = PickledDataLoader(
             description="Embeddings from reddit 'text' (title + post)",
             dependencies=['reddit'],
-            directory=config.dir_data_processed(),
+            directory=config.DIR_DATA_PROCESSED,
             cache=False,
         )
         # call __init__() after defining properties

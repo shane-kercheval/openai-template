@@ -3,37 +3,19 @@
 from helpsk.utility import open_yaml
 
 
+def read_file(file_name: str) -> str:
+    """Helper to clean up code."""
+    with open(file_name) as handle:
+        return handle.read().strip()
+
+
 CONFIG = open_yaml('source/config/config.yaml')
 
-
-def dir_ouput():  # noqa: ANN201, D103
-    return CONFIG['output']['directory']
-
-
-def dir_data_raw():  # noqa: ANN201, D103
-    return CONFIG['data']['raw_directory']
-
-
-def dir_data_interim():  # noqa: ANN201, D103
-    return CONFIG['data']['interim_directory']
-
-
-def dir_data_external():  # noqa: ANN201, D103
-    return CONFIG['data']['external_directory']
-
-
-def dir_data_processed():  # noqa: ANN201, D103
-    return CONFIG['data']['processed_directory']
-
-
-def dir_notebooks():  # noqa: ANN201, D103
-    return CONFIG['notebooks']['directory']
-
-
-def openai_pricing():  # noqa: ANN201, D103
-    return CONFIG['openai']['pricing']
-
-
-def openai_token():  # noqa: ANN201, D103
-    with open(CONFIG['openai']['token_path']) as handle:
-        return handle.read().strip()
+DIR_OUTPUT = CONFIG['output']['directory']
+DIR_DATA_RAW = CONFIG['data']['raw_directory']
+DIR_DATA_INTERIM = CONFIG['data']['interim_directory']
+DIR_DATA_EXTERNAL = CONFIG['data']['external_directory']
+DIR_DATA_PROCESSED = CONFIG['data']['processed_directory']
+DIR_NOTEBOOKS = CONFIG['notebooks']['directory']
+OPENAI_PRICING = CONFIG['openai']['pricing']
+OPENAI_TOKEN = read_file(CONFIG['openai']['token_path'])

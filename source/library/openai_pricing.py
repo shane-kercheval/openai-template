@@ -59,7 +59,7 @@ MODEL_NAME_TO_ENUM_LOOKUP = {
 PRICING_LOOKUP = {
     MODEL_NAME_TO_ENUM_LOOKUP[p['model']]:
         PerXTokensPricing(price_per_tokens=p['price_per_tokens'], per_x_tokens=p['per_x_tokens'])
-    for p in config.openai_pricing()
+    for p in config.OPENAI_PRICING
 }
 
 

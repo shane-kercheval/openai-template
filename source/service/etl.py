@@ -3,7 +3,7 @@
 import logging
 import pandas as pd
 from helpsk.logging import log_function_call, log_timer, Timer
-from source.config.config import openai_token
+from source.config.config import OPENAI_TOKEN
 from source.library.openai import OpenAI, EmbeddingModels
 
 
@@ -47,7 +47,7 @@ def get_embeddings(inputs: list[str]) -> list[list]:
     Args:
         inputs: list of strings to get embeddings for
     """
-    oai = OpenAI(api_key=openai_token())
+    oai = OpenAI(api_key=OPENAI_TOKEN)
     logging.info(f"Getting embeddings for: {len(inputs)} inputs.")
     responses = oai.text_embeddings(model=EmbeddingModels.ADA, inputs=inputs)
     logging.info(f"Total Cost: ${responses.total_cost:.4f}")

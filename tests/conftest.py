@@ -3,7 +3,7 @@
 import pytest
 import re
 from unittest.mock import MagicMock
-from source.config.config import openai_token
+from source.config.config import OPENAI_TOKEN
 from source.library.openai import OpenAIResponse, InstructModels
 from source.service.dataset_types import DatasetsBase, PickledDataLoader, CsvDataLoader
 
@@ -144,7 +144,7 @@ def datasets_fake_no_cache() -> TestDatasets:
 @pytest.fixture(scope='session')
 def openai_api_token() -> str:
     """Returns the OpenAI API Token."""
-    return openai_token()
+    return OPENAI_TOKEN
 
 
 @pytest.fixture(scope='session')
