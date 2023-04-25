@@ -1,7 +1,8 @@
 """Helper functions and classes used to call the OpenAPI asynchronously, and parse the results."""
 
 import asyncio
-from source.library.openai_pricing import EmbeddingModels, InstructModels, num_tokens, cost  # noqa
+from source.library.openai_models import EmbeddingModels, InstructModels
+from source.library.openai_pricing import num_tokens, cost  # noqa
 from source.library.openai_utilities import ExceededMaxTokensError, InvalidModelTypeError, \
     MissingApiKeyError, OpenAIInstructResult, OpenAIEmbeddingResult, OpenAIResponse, \
     OpenAIResponses, gather_payloads

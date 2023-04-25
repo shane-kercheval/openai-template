@@ -69,5 +69,30 @@ def get_embeddings() -> None:
     DATA.reddit_embeddings.save(embeddings)
 
 
+@main.command()
+def using_acreate() -> None:
+    """
+    Shows an example of using `acreate()`, which also does asynchronous calls but does not have
+    the retry logic that I implemented in my custom classes.
+    """
+    import openai
+    import asyncio
+    import source.config.config as config
+    openai.api_key = config.OPENAI_TOKEN
+    prompts = [
+        "What is the capital of France? ",
+        "What is the capital of Italy? ",
+    ]
+    # prompts *= 100
+    # NOTE, if I try more than 20 parallel requests (uncomment above), i get the following error:
+    # Too many parallel completions requested. You submitted 400 prompts, but you can currently
+    # request up to at most a total of 20). Please contact us through our help center at
+    # help.openai.com for further questions. (HINT: if you want to just evaluate probabilities
+    # without generating new text, you can submit more prompts if you set 'max_tokens' to 0.)
+    results = asyncio.run(openai.Completion.acreate(prompt=prompts, engine="text-ada-001"))
+    print(len(results))
+    print(results)
+
+
 if __name__ == '__main__':
     main()

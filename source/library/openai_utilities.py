@@ -8,12 +8,8 @@ import json
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, \
     RetryError
+from source.config.config import OPENAI_RETRY_ATTEMPTS, OPENAI_RETRY_MAX, OPENAI_RETRY_MULTIPLIER
 from source.library.openai_pricing import cost
-
-
-RETRY_ATTEMPTS = 3
-RETRY_MULTIPLIER = 1
-RETRY_MAX = 10
 
 
 class OpenAIResultBase(BaseModel):
@@ -247,8 +243,8 @@ class CustomResponse(BaseModel):
 
 
 @retry(
-    stop=stop_after_attempt(RETRY_ATTEMPTS),
-    wait=wait_exponential(multiplier=RETRY_MULTIPLIER, max=RETRY_MAX),
+    stop=stop_after_attempt(OPENAI_RETRY_ATTEMPTS),
+    wait=wait_exponential(multiplier=OPENAI_RETRY_MULTIPLIER, max=OPENAI_RETRY_MAX),
     retry=retry_if_exception_type(RateLimitError),
 )
 async def _post_async_with_retry(

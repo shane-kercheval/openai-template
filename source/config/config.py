@@ -19,3 +19,6 @@ DIR_DATA_PROCESSED = CONFIG['data']['processed_directory']
 DIR_NOTEBOOKS = CONFIG['notebooks']['directory']
 OPENAI_PRICING = CONFIG['openai']['pricing']
 OPENAI_TOKEN = read_file(CONFIG['openai']['token_path'])
+OPENAI_RETRY_ATTEMPTS = CONFIG['openai']['retry_attempts']
+OPENAI_RETRY_MULTIPLIER = CONFIG['openai']['retry_multiplier']
+OPENAI_RETRY_MAX = CONFIG['openai']['retry_max']
