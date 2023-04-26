@@ -1,4 +1,13 @@
-"""Helper functions and classes used to call the OpenAPI asynchronously, and parse the results."""
+"""
+Helper functions and classes used to call the OpenAPI asynchronously, and parse the results.
+
+Currently, I make HTTP requests directly rather than using the openai Python package. One reason
+is that, currently, the openai.Completion.acreate asynchronous function has a maximum input length
+of 20 (i.e. you can only give it 20 instructions at a time). The original intent of this script
+is to use OpenAI to generate text from a large number of prompts. This may not be a common
+use-case. Additionally, the functions I use for to make the http post requests (and retry logic)
+are not specific to OpenAI and so this could easily be expanded to other use-cases and APIs.
+"""
 
 import asyncio
 from source.library.openai_models import EmbeddingModels, InstructModels
