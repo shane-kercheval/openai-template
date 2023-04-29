@@ -40,7 +40,7 @@ def extract() -> None:
 
 @main.command()
 def transform() -> None:
-    """T ransforms the reddit data."""
+    """Transforms the reddit data."""
     raw__reddit = DATA.raw__reddit.load()
     logging.info("Transforming reddit data.")
     reddit = etl.transform(raw__reddit)

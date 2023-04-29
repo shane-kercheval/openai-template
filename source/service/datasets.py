@@ -28,7 +28,7 @@ from source.service.dataset_types import DatasetsBase, PickledDataLoader
 
 
 class Datasets(DatasetsBase):
-    """Defines the datasets available."""
+    """Defines the datasets available to the project."""
 
     def __init__(self) -> None:
         # define the datasets before calling __init__()

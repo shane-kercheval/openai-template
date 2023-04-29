@@ -1,1 +1,1 @@
-"""Required File."""
+"""Used by python to mark a directory as a package."""
