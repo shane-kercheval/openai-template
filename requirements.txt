@@ -1,7 +1,6 @@
 aiohttp
 click
 coverage
-flake8
 helpsk
 jupyter-contrib-nbextensions
 notebook
