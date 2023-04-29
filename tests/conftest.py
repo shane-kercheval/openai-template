@@ -4,7 +4,7 @@ import pytest
 import re
 from unittest.mock import MagicMock
 from source.config.config import OPENAI_TOKEN
-from source.library.openai import OpenAIResponse, InstructModels
+from source.service.openai import OpenAIResponse, InstructModels
 from source.service.dataset_types import DatasetsBase, PickledDataLoader, CsvDataLoader
 
 

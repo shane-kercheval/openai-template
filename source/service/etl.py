@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 from helpsk.logging import log_function_call, log_timer, Timer
 from source.config.config import OPENAI_TOKEN
-from source.library.openai import OpenAI, EmbeddingModels
+from source.service.openai import OpenAI, EmbeddingModels
 
 
 @log_function_call

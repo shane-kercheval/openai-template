@@ -3,7 +3,7 @@
 import pytest
 import aiohttp
 from tenacity import wait_none
-from source.library.openai import OpenAI
+from source.service.openai import OpenAI
 from source.library.openai_utilities import ExceededMaxTokensError, InvalidModelTypeError, \
     MissingApiKeyError, OpenAIInstructResult, OpenAIResponse, _post_async_with_retry, post_async
 from source.library.openai_pricing import EmbeddingModels, InstructModels, cost, _encode
