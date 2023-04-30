@@ -41,6 +41,15 @@ Running the entire project (tests, ETL, EDA, etc.) from command-line (inside doc
 make all
 ```
 
+## OpenAI Token
+
+The OpenAI token should be stored in a file in the home directory called `.openai_template.env` in the following format:
+
+
+```
+OPENAI_TOKEN=<token-goes-here-without-brackets>
+```
+
 ## Running the Code
 
 The `Makefile` runs all components of the project. You can think of it as containing the implicit DAG, or recipe, of the project.
