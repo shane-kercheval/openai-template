@@ -2,9 +2,8 @@
 # DOCKER
 ####
 docker_build:
-	cp ~/.openai_api_key .
+	cp ~/.openai_template.env .
 	docker compose -f docker-compose.yml build
-	rm .openai_api_key
 
 docker_run: docker_build
 	docker compose -f docker-compose.yml up
@@ -13,9 +12,8 @@ docker_down:
 	docker compose down --remove-orphans
 
 docker_rebuild:
-	cp ~/.openai_api_key .
+	cp ~/.openai_template.env .
 	docker compose -f docker-compose.yml build --no-cache
-	rm .openai_api_key
 
 docker_bash:
 	docker compose -f docker-compose.yml up --build bash
@@ -65,7 +63,7 @@ data_transform:
 embeddings:
 	python source/entrypoints/cli.py get-embeddings
 
-data: data_extract data_transform 
+data: data_extract data_transform embeddings
 
 notebooks:
 	jupyter nbconvert --execute --to html source/notebooks/datasets.ipynb

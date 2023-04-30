@@ -1,4 +1,4 @@
-2023-04-29 20:07:16 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
-2023-04-29 20:07:19 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
-2023-04-29 20:07:24 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
-2023-04-29 20:07:24 - INFO     | Loading data `reddit_embeddings` from `data/processed/reddit_embeddings.pkl`
+2023-04-30 19:26:24 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
+2023-04-30 19:26:27 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
+2023-04-30 19:26:34 - INFO     | Loading data `reddit` from `data/processed/reddit.pkl`
+2023-04-30 19:26:34 - INFO     | Loading data `reddit_embeddings` from `data/processed/reddit_embeddings.pkl`

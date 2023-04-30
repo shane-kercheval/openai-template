@@ -27,4 +27,4 @@ openai:
     - model: 'text-davinci-003'
       price_per_tokens: 0.02
       per_x_tokens: 1_000
-  token_path: '/.openai_api_key'
+  

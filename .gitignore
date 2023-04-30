@@ -200,4 +200,4 @@ data/raw/*
 
 !tests/test_files/datasets/*.csv
 !tests/test_files/datasets/*.pkl
-.openai_api_key
+.openai_template.env
